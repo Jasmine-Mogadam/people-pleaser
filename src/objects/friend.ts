@@ -1,29 +1,26 @@
-import { type Personality, PersonalityType } from "./personality";
+import { type Personality, PersonalityEnum } from "./personality";
+import { PreferenceEnum, type Preference } from "./preference";
+import store from "../state/store";
+import { discoverFriend, updateFriend } from "../state/gameStateSlice";
+
+const { friends } = store.getState();
 
 let id = -1;
-// I /could/ make a ridiculous interface and so the class isn't directly 
-// exported so other classes don't have access to the constructor, but I'm eepy
-export class Friend {
+class Friend {
     id: number;
     name: string;
     owner: string;
     ownerUrl: string;
     image: string;
     personality: Personality;
-    friendOverrides: number[];
-    giftOverrides: string[];
-    hangoutOverrides: string[];
+    preferences: Preference[] = [];
+    discoveredPreferences: Preference[] = [];
     friendshipLevel: number;
     constructor(
         name: string,
         owner: string,
         image: string,
         personality: Personality,
-        // I cannot be bothered to figure out a way to chain this in 
-        // the big list so this is gonna be awful to update :(
-        friendOverrides: number[],
-        giftOverrides: string[],
-        hangoutOverrides: string[],
     ) {
         this.id = id++; // my favorite silly trick
         this.name = name;
@@ -31,9 +28,6 @@ export class Friend {
         this.ownerUrl = `https://artfight.net/~${owner}`;
         this.image = image;
         this.personality = personality;
-        this.friendOverrides = friendOverrides;
-        this.giftOverrides = giftOverrides;
-        this.hangoutOverrides = hangoutOverrides;
         this.friendshipLevel = 0;
     }
 
@@ -43,30 +37,37 @@ export class Friend {
      */
     updateFriendshipLevel(levelsToAdd: number) {
         this.friendshipLevel = Math.max(0, Math.min(this.friendshipLevel + levelsToAdd, 100));
+        this.updateState();
+    }
+
+    updateState() {
+        const friendIndex = friends.findIndex(friend => friend.id === this.id);
+        if (friendIndex === -1) {
+            // Friend not found, add to the list
+            discoverFriend(this);
+        } else {
+            // Friend found, update the existing entry
+            updateFriend(this);
+        }
+    }
+
+    getLikes(): Preference[] {
+        return this.preferences.filter(
+            (p) => p.preference === PreferenceEnum.Like,
+        );
+    }
+
+    getDislikes(): Preference[] {
+        return this.preferences.filter(
+            (p) => p.preference === PreferenceEnum.Dislike,
+        );
     }
 }
+export { type Friend };
+
 export const AllFriends = [new Friend(
-    "Avery",
-    "Avery",
-    "avery.png",
-    PersonalityType.Normal,
-    [],
-    [],
-    [],
-), new Friend(
-    "Bree",
-    "Bree",
-    "bree.png",
-    PersonalityType.Shy,
-    [],
-    [],
-    [],
-), new Friend(
-    "Cameron",
-    "Cameron",
-    "cameron.png",
-    PersonalityType.Intense,
-    [],
-    [],
-    [],
+    "Test Man",
+    "PinkFlamess",
+    "test.png",
+    PersonalityEnum.Relaxed,
 )]
