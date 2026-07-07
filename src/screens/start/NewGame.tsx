@@ -2,7 +2,8 @@ import { type Friend, AllFriends } from "../../objects/friend";
 import { useState } from "react";
 import { setPlayerCharacter } from "../../state/gameStateSlice";
 import ScreenHeader from "./ScreenHeader";
-import FriendSelect from "@/components/ui/friend/friendSelect";
+import FriendSearch from "@/components/ui/friend/friendSearch";
+import { Button } from "@/components/ui/button";
 
 function NewGame({
   setActiveScreen,
@@ -12,10 +13,6 @@ function NewGame({
   const [selectedCharacter, setSelectedCharacter] = useState<Friend | null>(
     null,
   );
-
-  const handleCharacterSelect = (character: Friend) => {
-    setSelectedCharacter(character);
-  };
 
   const handleConfirmSelection = () => {
     if (selectedCharacter) {
@@ -28,7 +25,17 @@ function NewGame({
     <div>
       <ScreenHeader setActiveScreen={setActiveScreen} title={"New Game"} />
       <h2>Select Your Character</h2>
-      <FriendSelect friends={AllFriends} setFriend={setSelectedCharacter} />
+      <FriendSearch
+        friends={AllFriends}
+        select={true}
+        onChange={setSelectedCharacter}
+      />
+      <Button
+        disabled={selectedCharacter === null}
+        onClick={handleConfirmSelection}
+      >
+        Start Game
+      </Button>
     </div>
   );
 }

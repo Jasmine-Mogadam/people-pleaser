@@ -7,7 +7,7 @@ function PreferenceList({ preferences }: { preferences: Preference[] }) {
   return (
     <>
       {preferences.map((p) => (
-        <td>
+        <td key={p.value.name}>
           <img src={p.value.name} />
           <p>{p.value.name}</p>
         </td>
@@ -35,16 +35,20 @@ function FriendDetail({ friend }: { friend: Friend }) {
           </div>
         </div>
         <table>
-          <tr>
-            <th>Likes</th>
-            <th>Dislikes</th>
-          </tr>
-          <tr>
-            <PreferenceList preferences={friend.getLikes()} />
-          </tr>
-          <tr>
-            <PreferenceList preferences={friend.getDislikes()} />
-          </tr>
+          <thead>
+            <tr>
+              <th>Likes</th>
+              <th>Dislikes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <PreferenceList preferences={friend.getLikes()} />
+            </tr>
+            <tr>
+              <PreferenceList preferences={friend.getDislikes()} />
+            </tr>
+          </tbody>
         </table>
       </div>
     </>

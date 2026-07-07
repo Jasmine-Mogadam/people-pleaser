@@ -1,11 +1,21 @@
 import type { Friend } from "../../../objects/friend";
-import FriendThumb from "./friendThumb";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import FriendDialog from "./friendDialog";
+import FriendThumb from "./friendThumb";
 
-function FriendSearch({ friends }: { friends: Friend[] }) {
+function FriendSearch({
+  friends,
+  select = false,
+  onChange = () => {},
+}: {
+  friends: Friend[];
+  select?: boolean;
+  onChange?: (friend: Friend) => void;
+}) {
   const [friendFilter, setFriendFilter] = useState<string>("");
+  const [activeId, setActiveId] = useState<number | null>(null);
   return (
     <>
       <div className="flex align-center m-5" style={{ alignItems: "center" }}>
@@ -20,9 +30,21 @@ function FriendSearch({ friends }: { friends: Friend[] }) {
           .filter((f) =>
             f.name.toLowerCase().includes(friendFilter.toLowerCase()),
           )
-          .map((f) => (
-            <FriendThumb friend={f} key={f.id} />
-          ))}
+          .map((f) =>
+            select ? (
+              <FriendThumb
+                friend={f}
+                key={f.id}
+                onClick={(f) => {
+                  onChange(f);
+                  setActiveId(f.id);
+                }}
+                isActive={activeId === f.id}
+              />
+            ) : (
+              <FriendDialog friend={f} key={f.id} />
+            ),
+          )}
       </div>
     </>
   );
