@@ -1,17 +1,17 @@
+import { ArrowUpRightIcon } from "lucide-react";
 import type { Friend } from "../../../objects/friend";
 import type { Preference } from "../../../objects/preference";
+import { Badge } from "../badge";
 
 function PreferenceList({ preferences }: { preferences: Preference[] }) {
   return (
     <>
-      <ul>
-        {preferences.map((p) => (
-          <li>
-            <img src={p.value.name} />
-            <p>{p.value.name}</p>
-          </li>
-        ))}
-      </ul>
+      {preferences.map((p) => (
+        <td>
+          <img src={p.value.name} />
+          <p>{p.value.name}</p>
+        </td>
+      ))}
     </>
   );
 }
@@ -20,23 +20,32 @@ function FriendDetail({ friend }: { friend: Friend }) {
   return (
     <>
       <div>
-        <img src={friend.image} />
-        {friend.name} | {friend.personality} |{" "}
-        <a href={friend.ownerUrl}>{friend.owner}</a>
-        <div>
-          <div>
-            <h4>Likes</h4>
-            <div>
-              <PreferenceList preferences={friend.getLikes()} />
-            </div>
-          </div>
-          <div>
-            <h4>Dislikes</h4>
-            <div>
-              <PreferenceList preferences={friend.getDislikes()} />
-            </div>
+        <div className="flex">
+          <img src={friend.image} className="h-100 mb-5" />
+          <div className="grid mt-0">
+            <h1>{friend.name}</h1>
+            <a href={friend.ownerUrl} target="_blank">
+              owned by{" "}
+              <u>
+                {friend.owner}
+                <ArrowUpRightIcon />
+              </u>
+            </a>
+            <Badge>{friend.personality}</Badge>
           </div>
         </div>
+        <table>
+          <tr>
+            <th>Likes</th>
+            <th>Dislikes</th>
+          </tr>
+          <tr>
+            <PreferenceList preferences={friend.getLikes()} />
+          </tr>
+          <tr>
+            <PreferenceList preferences={friend.getDislikes()} />
+          </tr>
+        </table>
       </div>
     </>
   );

@@ -9,9 +9,9 @@ function ScreenHeader({
 }) {
   return (
     <>
-      <div>
+      <div className="flex align-center m-5" style={{ alignItems: "center" }}>
         <ArrowLeftIcon
-          className="h-6 w-6"
+          className="h-6 w-6 mr-5 h-10 w-10"
           onClick={() => setActiveScreen(ScreenEnum.Main)}
         />
         <h1>{title}</h1>

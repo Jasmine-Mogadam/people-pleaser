@@ -8,9 +8,12 @@ function FriendSearch({ friends }: { friends: Friend[] }) {
   const [friendFilter, setFriendFilter] = useState<string>("");
   return (
     <>
-      <div>
-        <Search />
-        <Input onChange={(e) => setFriendFilter(e.target.value)}></Input>
+      <div className="flex align-center m-5" style={{ alignItems: "center" }}>
+        <Search className="mr-1" />
+        <Input
+          onChange={(e) => setFriendFilter(e.target.value)}
+          placeholder="Character name here..."
+        ></Input>
       </div>
       <div>
         {friends

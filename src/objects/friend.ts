@@ -1,5 +1,5 @@
 import { type Personality, PersonalityEnum } from "./personality";
-import { PreferenceEnum, type Preference } from "./preference";
+import { getPreferencesForPersonality, PreferenceEnum, type Preference } from "./preference";
 import store from "../state/store";
 import { discoverFriend, updateFriend } from "../state/gameStateSlice";
 
@@ -19,14 +19,13 @@ class Friend {
     constructor(
         name: string,
         owner: string,
-        image: string,
         personality: Personality,
     ) {
         this.id = id++; // my favorite silly trick
         this.name = name;
         this.owner = owner;
         this.ownerUrl = `https://artfight.net/~${owner}`;
-        this.image = image;
+        this.image = new URL(`../assets/friend/${name.toLowerCase()}.png`, import.meta.url).href;
         this.personality = personality;
         this.friendshipLevel = 0;
     }
@@ -66,8 +65,13 @@ class Friend {
 export { type Friend };
 
 export const AllFriends = [new Friend(
-    "Test Man",
-    "PinkFlamess",
-    "test.png",
+    "Benny",
+    "judylll",
     PersonalityEnum.Relaxed,
+), new Friend(
+    "Apple",
+    "NatieN",
+    PersonalityEnum.Intense,
 )]
+
+AllFriends.forEach(f => f.preferences = getPreferencesForPersonality(f.personality))
