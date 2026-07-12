@@ -4,6 +4,7 @@ import Main from "./Main";
 import NewGame from "./NewGame";
 import About from "./About";
 import Gallery from "./Gallery";
+import GameMain from "../game/GameMain";
 
 function StartMenu() {
   const [activeScreen, setActiveScreen] = useState(ScreenEnum.Main);
@@ -18,6 +19,8 @@ function StartMenu() {
         return <Gallery setActiveScreen={setActiveScreen} />;
       case ScreenEnum.About:
         return <About setActiveScreen={setActiveScreen} />;
+      case ScreenEnum.Game:
+        return <GameMain />;
     }
   };
   return <>{renderScreen()}</>;

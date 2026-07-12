@@ -4,8 +4,10 @@ import { AllGifts, type Gift } from "./gift";
 import { AllFriends, type Friend } from "./friend";
 
 export const PreferenceEnum = {
+    Favorite: "Favorite",
     Like: "Like",
     Dislike: "Dislike",
+    Hate: "Hate",
 }
 export type PreferenceType = typeof PreferenceEnum[keyof typeof PreferenceEnum];
 
@@ -19,6 +21,7 @@ class Preference {
 }
 export { type Preference };
 
+// TODO: make this get pref for friend so it doesn't auto-include themselves D:
 export function getPreferencesForPersonality(personality: Personality): Preference[] {
     function getFriendPersonaPref(personality: Personality, preference: PreferenceType): Preference[] {
         return AllFriends.filter(friend => friend.personality === personality)
@@ -64,4 +67,14 @@ export function getPreferencesForPersonality(personality: Personality): Preferen
     }
     console.warn(`No preferences defined for personality: ${personality}`);
     return [];
+}
+
+// Adds things like mutual enemies and mutual friends.
+export function addFriendPreference(name1: string, name2: string, preferenceType: PreferenceType = PreferenceEnum.Favorite): void {
+    const f1index = AllFriends.findIndex(f => f.name === name1)
+    const f2index = AllFriends.findIndex(f => f.name === name2)
+    if (f1index === -1 || f2index === -1)
+        return console.error(`Could not find one or both friends: ${name1}, ${name2}`)
+    AllFriends[f1index].preferences.push(new Preference(AllFriends[f2index], preferenceType))
+    AllFriends[f2index].preferences.push(new Preference(AllFriends[f1index], preferenceType))
 }

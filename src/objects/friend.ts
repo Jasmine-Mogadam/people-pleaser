@@ -1,5 +1,5 @@
 import { type Personality, PersonalityEnum } from "./personality";
-import { getPreferencesForPersonality, PreferenceEnum, type Preference } from "./preference";
+import { addFriendPreference, getPreferencesForPersonality, PreferenceEnum, type Preference } from "./preference";
 import store from "../state/store";
 import { discoverFriend, updateFriend } from "../state/gameStateSlice";
 
@@ -72,6 +72,34 @@ export const AllFriends = [new Friend(
     "Apple",
     "NatieN",
     PersonalityEnum.Intense,
+), new Friend(
+    "Lucille",
+    "NatieN",
+    PersonalityEnum.Refined,
+), new Friend(
+    "Cherie",
+    "NatieN",
+    PersonalityEnum.Relaxed,
+), new Friend(
+    "Yvonne",
+    "NatieN",
+    PersonalityEnum.Intense,
+), new Friend(
+    "Devin",
+    "HybridStarscapes",
+    PersonalityEnum.Shy,
+), new Friend(
+    "Andrew",
+    "HybridStarscapes",
+    PersonalityEnum.Relaxed,
+), new Friend(
+    "Reina",
+    "HybridStarscapes",
+    PersonalityEnum.Intense,
 )]
 
 AllFriends.forEach(f => f.preferences = getPreferencesForPersonality(f.personality))
+
+// HybridStarscapes relationships
+addFriendPreference("Devin", "Andrew")
+addFriendPreference("Reina", "Andrew")

@@ -60,9 +60,12 @@ export const moneySlice = createSlice({
         setMoney: (state, action: PayloadAction<number>) => {
             return action.payload;
         },
+        addMoney: (state, action: PayloadAction<number>) => {
+            state += action.payload
+        }
     },
 });
-export const { setMoney } = moneySlice.actions;
+export const { setMoney, addMoney } = moneySlice.actions;
 
 export const houseSlice = createSlice({
     name: "house",
@@ -96,3 +99,17 @@ export const playerCharacterSlice = createSlice({
     },
 });
 export const { setPlayerCharacter } = playerCharacterSlice.actions;
+
+export const weeksLeftSlice = createSlice({
+    name: "money",
+    initialState: 0 as number,
+    reducers: {
+        setWeeksLeft: (state, action: PayloadAction<number>) => {
+            return action.payload;
+        },
+        nextWeek: (state, action: PayloadAction<number>) => {
+            state--
+        }
+    },
+});
+export const { setWeeksLeft, nextWeek } = weeksLeftSlice.actions;

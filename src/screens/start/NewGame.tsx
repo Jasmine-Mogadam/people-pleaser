@@ -4,6 +4,7 @@ import { setPlayerCharacter } from "../../state/gameStateSlice";
 import ScreenHeader from "./ScreenHeader";
 import FriendSearch from "@/components/ui/friend/friendSearch";
 import { Button } from "@/components/ui/button";
+import { ScreenEnum } from "./screenEnum";
 
 function NewGame({
   setActiveScreen,
@@ -18,6 +19,7 @@ function NewGame({
     if (selectedCharacter) {
       setPlayerCharacter(selectedCharacter);
       console.log("Selected character:", selectedCharacter);
+      setActiveScreen(ScreenEnum.Game);
     }
   };
 
