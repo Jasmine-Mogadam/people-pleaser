@@ -1,4 +1,9 @@
+import store from "@/state/store";
 import { type Personality, PersonalityEnum } from "./personality";
+import { AllFriends, type Friend } from "./friend";
+import { discoverFriend } from "@/state/gameStateSlice";
+
+const { friends } = store.getState();
 
 class Hangout {
     name: string;
@@ -10,6 +15,42 @@ class Hangout {
         this.image = image;
         this.personalityPreferences = personalityPreferences;
         this.description = description;
+    }
+
+    // TODO: make gifts, friends, and gifts have a shared abstract class that share this function
+    getPeopleWhoLikeThis(): Friend[] {
+        return AllFriends.filter(f => this.personalityPreferences.includes(f.personality));
+    }
+
+    // random chance to find a new friend
+    // TODO: make gifts, friends, and gifts have a shared abstract class that share this function
+    findFriend(): Friend | null {
+        // characters in allfriends but not in friends (people you have not met yet)
+        const strangers = AllFriends.filter(f => !friends.includes(f));
+        if (strangers.length === 0) return null // no more people to discover.
+
+        const luck = Math.random() * 100
+        let possibleFriends = null
+
+        // rarest chance goes into effect
+        // 25% introduce to liked friend
+        if (luck > 75) {
+            possibleFriends = this.getPeopleWhoLikeThis().filter(
+                f => strangers.includes(f)
+            )
+        }
+        // 10% introduce to random friend
+        if (luck > 90) {
+            possibleFriends = strangers
+        }
+
+        if (possibleFriends && possibleFriends.length > 0) {
+            const newFriend = possibleFriends[Math.random() * possibleFriends.length];
+            discoverFriend(newFriend);
+            return newFriend // friend rolled!!
+        }
+
+        return null; // no friend rolled
     }
 }
 export { type Hangout };

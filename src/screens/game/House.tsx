@@ -9,11 +9,13 @@ function House() {
       const friend = house.roomates[i];
       i++;
       return (
-        <div>
-          <img
-            src={friend.image}
-            style={{ position: "absolute", left: pos.x, top: pos.y }}
-          />
+        <div key={i}>
+          {friend && (
+            <img
+              src={friend.image}
+              style={{ position: "absolute", left: pos.x, top: pos.y }}
+            />
+          )}
         </div>
       );
     });

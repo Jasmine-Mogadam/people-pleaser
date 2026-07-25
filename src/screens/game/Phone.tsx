@@ -1,32 +1,20 @@
+import "./Phone.css";
 import { Button } from "@/components/ui/button";
 import store from "@/state/store";
-import { MapPin, MessageCircle, User2, Worm } from "lucide-react";
+import { MapPin, MessageCircle, Settings, User2, Worm } from "lucide-react";
 import { useState } from "react";
 import { ScreenEnum } from "./screenEnum";
-import FriendSearch from "@/components/ui/friend/friendSearch";
+import { PhoneScreenEnum } from "./phone/PhoneScreenEnum";
+import Contacts from "./phone/Contacts";
+import Chat from "./phone/Chat";
 
 function Phone({
   setActiveScreen,
 }: {
   setActiveScreen: (screen: string) => void;
 }) {
-  const {
-    inventory,
-    friends,
-    money,
-    house,
-    discoveredHangouts,
-    playerCharacter,
-  } = store.getState();
+  const { discoveredHangouts } = store.getState();
 
-  const PhoneScreenEnum = {
-    Main: "Main",
-    Contacts: "Contacts",
-    Chat: "Chat", // find out more about existing friends
-    Maps: "Maps", // hangout planning
-    WormGround: "WormGround ", // social media, allows player to find new people
-    Settings: "Settings", // accessibility
-  };
   const renderScreen = () => {
     switch (activePhoneScreen) {
       case PhoneScreenEnum.Main:
@@ -64,7 +52,7 @@ function Phone({
               className="settings"
               onClick={() => setActivePhoneScreen(PhoneScreenEnum.Settings)}
             >
-              <Worm />
+              <Settings />
               Settings
             </Button>
           </>
@@ -72,11 +60,11 @@ function Phone({
       case PhoneScreenEnum.Contacts:
         return (
           <>
-            <FriendSearch friends={friends} />
+            <Contacts setActiveScreen={setActivePhoneScreen} />
           </>
         );
       case PhoneScreenEnum.Chat:
-        return <></>;
+        return <Chat setActiveScreen={setActivePhoneScreen} />;
       case PhoneScreenEnum.Maps:
         return (
           <>

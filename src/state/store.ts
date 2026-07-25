@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { weeksLeftSlice, discoveredHangoutsSlice, friendsSlice, houseSlice, inventorySlice, moneySlice, playerCharacterSlice } from './gameStateSlice'
+import { currentWeekSlice, actionPointsSlice, discoveredHangoutsSlice, friendsSlice, houseSlice, inventorySlice, moneySlice, playerCharacterSlice } from './gameStateSlice'
 
 export default configureStore({
     reducer: {
@@ -9,6 +9,7 @@ export default configureStore({
         house: houseSlice.reducer,
         discoveredHangouts: discoveredHangoutsSlice.reducer,
         playerCharacter: playerCharacterSlice.reducer,
-        weeksLeft: weeksLeftSlice.reducer
+        currentWeek: currentWeekSlice.reducer,
+        actionPoints: actionPointsSlice.reducer
     },
 })

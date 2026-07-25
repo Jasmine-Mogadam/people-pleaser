@@ -2,10 +2,10 @@ import type { Friend } from "../objects/friend";
 import type { Gift } from "../objects/gift";
 import type { Hangout } from "../objects/hangout";
 import type { House } from "../objects/house";
-import { discoveredHangoutsSlice, friendsSlice, houseSlice, inventorySlice, moneySlice, playerCharacterSlice } from "./gameStateSlice";
+import { actionPointsSlice, currentWeekSlice, discoveredHangoutsSlice, friendsSlice, houseSlice, inventorySlice, moneySlice, playerCharacterSlice } from "./gameStateSlice";
 import store from "./store";
 
-const { inventory, friends, money, house, discoveredHangouts, playerCharacter } = store.getState();
+const { inventory, friends, money, house, discoveredHangouts, playerCharacter, currentWeek, actionPoints } = store.getState();
 
 export interface State {
     inventory: Gift[];
@@ -14,6 +14,8 @@ export interface State {
     house: House;
     discoveredHangouts: Hangout[];
     playerCharacter: Friend | null;
+    currentWeek: number;
+    actionPoints: number;
 }
 
 export function loadGameState(): void {
@@ -27,6 +29,8 @@ export function loadGameState(): void {
             houseSlice.actions.setHouse(state.house);
             discoveredHangoutsSlice.actions.setDiscoveredHangouts(state.discoveredHangouts);
             playerCharacterSlice.actions.setPlayerCharacter(state.playerCharacter);
+            currentWeekSlice.actions.setCurrentWeek(state.currentWeek);
+            actionPointsSlice.actions.setActionPoints(state.actionPoints);
         } catch (error) {
             console.error(`Error loading state":`, error);
         }
@@ -41,6 +45,8 @@ export function saveGameState(): void {
         house: house,
         discoveredHangouts: discoveredHangouts,
         playerCharacter: playerCharacter,
+        currentWeek: currentWeek,
+        actionPoints: actionPoints
     };
     try {
         const item = JSON.stringify(state);

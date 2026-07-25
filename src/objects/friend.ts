@@ -56,14 +56,62 @@ class Friend {
         );
     }
 
+    // TODO: fix this so a hangout/gift with the same name as a friend does not get selected here D:
+    getFriends(): Friend[] {
+        return this.getLikes().filter(
+            p => AllFriends.includes(p.value as Friend)
+        ).map(p => p.value) as Friend[]
+    }
+
+    getBestFriends(): Friend[] {
+        return this.getFriends().filter(f => f.owner === this.owner) // same owner
+    }
+
     getDislikes(): Preference[] {
         return this.preferences.filter(
             (p) => p.preference === PreferenceEnum.Dislike,
         );
     }
+
+    // random chance to be introduced to new friend
+    introduceFriend(): Friend | null {
+        // characters in allfriends but not in friends (people you have not met yet)
+        const strangers = AllFriends.filter(f => !friends.includes(f));
+        if (strangers.length === 0) return null // no more people to discover.
+
+        const luck = Math.random() * 100
+        let possibleFriends = null
+
+        // rarest chance goes into effect
+        // 25% introduce to best friend
+        if (luck > 75) {
+            possibleFriends = this.getBestFriends().filter(
+                f => strangers.includes(f)
+            )
+        }
+        // 10% introduce to liked friend
+        if (luck > 90) {
+            possibleFriends = this.getFriends().filter(
+                f => strangers.includes(f)
+            )
+        }
+        // 5% introduce to random
+        if (luck > 95) {
+            possibleFriends = strangers
+        }
+
+        if (possibleFriends && possibleFriends.length > 0) {
+            const newFriend = possibleFriends[Math.random() * possibleFriends.length];
+            discoverFriend(newFriend);
+            return newFriend // friend rolled!!
+        }
+
+        return null; // no friend rolled
+    }
 }
 export { type Friend };
 
+// TODO: make it impossible to be your own friend
 export const AllFriends = [new Friend(
     "Benny",
     "judylll",

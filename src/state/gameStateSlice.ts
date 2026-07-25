@@ -100,16 +100,30 @@ export const playerCharacterSlice = createSlice({
 });
 export const { setPlayerCharacter } = playerCharacterSlice.actions;
 
-export const weeksLeftSlice = createSlice({
-    name: "money",
+export const currentWeekSlice = createSlice({
+    name: "currentWeek",
     initialState: 0 as number,
     reducers: {
-        setWeeksLeft: (state, action: PayloadAction<number>) => {
+        setCurrentWeek: (state, action: PayloadAction<number>) => {
             return action.payload;
         },
         nextWeek: (state, action: PayloadAction<number>) => {
-            state--
+            state++
         }
     },
 });
-export const { setWeeksLeft, nextWeek } = weeksLeftSlice.actions;
+export const { setCurrentWeek, nextWeek } = currentWeekSlice.actions;
+
+export const actionPointsSlice = createSlice({
+    name: "actionPoints",
+    initialState: 0 as number,
+    reducers: {
+        setActionPoints: (state, action: PayloadAction<number>) => {
+            return action.payload;
+        },
+        useActionPoints: (state, action: PayloadAction<number>) => {
+            state -= action.payload
+        }
+    },
+});
+export const { setActionPoints, useActionPoints } = actionPointsSlice.actions;

@@ -16,6 +16,10 @@ function FriendSearch({
 }) {
   const [friendFilter, setFriendFilter] = useState<string>("");
   const [activeId, setActiveId] = useState<number | null>(null);
+  const getFilteredFriends = () =>
+    friends.filter((f) =>
+      f.name.toLowerCase().includes(friendFilter.toLowerCase()),
+    );
   return (
     <>
       <div className="flex align-center m-5" style={{ alignItems: "center" }}>
@@ -25,12 +29,10 @@ function FriendSearch({
           placeholder="Character name here..."
         ></Input>
       </div>
+      {select && <i>Click a thumbnail to select it.</i>}
       <div>
-        {friends
-          .filter((f) =>
-            f.name.toLowerCase().includes(friendFilter.toLowerCase()),
-          )
-          .map((f) =>
+        {getFilteredFriends().length > 0 ? (
+          getFilteredFriends().map((f) =>
             select ? (
               <FriendThumb
                 friend={f}
@@ -44,7 +46,10 @@ function FriendSearch({
             ) : (
               <FriendDialog friend={f} key={f.id} />
             ),
-          )}
+          )
+        ) : (
+          <div>No Friends Found</div>
+        )}
       </div>
     </>
   );
