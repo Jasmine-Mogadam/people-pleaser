@@ -4,7 +4,7 @@ import type { Friend } from "@/objects/friend";
 import type { Hangout } from "@/objects/hangout";
 import { useActionPoints } from "@/state/gameStateSlice";
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import "./Hangout.css";
 
 function HangoutDisplay({
@@ -12,9 +12,9 @@ function HangoutDisplay({
 }: {
   selectedHangout: Hangout | undefined;
 }) {
-  const dispatch = useDispatch();
-  const friends = useSelector((state) => state.friends);
-  const actionPoints = useSelector((state) => state.actionPoints);
+  const dispatch = useAppDispatch();
+  const friends = useAppSelector((state) => state.friends);
+  const actionPoints = useAppSelector((state) => state.actionPoints);
   const [selectedFriends, setSelectedFriends] = useState([] as Friend[]);
   // TODO: Add popup with info about failure or points gained out of max
   const startHangout = () => {

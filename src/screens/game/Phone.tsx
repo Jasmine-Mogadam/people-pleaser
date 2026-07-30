@@ -1,6 +1,5 @@
 import "./Phone.css";
 import { Button } from "@/components/ui/button";
-import store from "@/state/store";
 import { MapPin, MessageCircle, Settings, User2, Worm } from "lucide-react";
 import { useState } from "react";
 import { ScreenEnum } from "./screenEnum";
@@ -17,8 +16,6 @@ function Phone({
   setActiveScreen: (screen: string) => void;
   setSelectedHangout: (hangout: Hangout) => void;
 }) {
-  const { discoveredHangouts } = store.getState();
-
   const renderScreen = () => {
     switch (activePhoneScreen) {
       // TODO: Add shoppinh and work screens to get and spend money. You always get a base salary, but working can get promotions to get more + overtime for money now

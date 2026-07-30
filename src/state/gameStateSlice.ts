@@ -21,7 +21,7 @@ export const inventorySlice = createSlice({
             state.splice(index, 1);
             return state
         },
-        setInventory: (state, action: PayloadAction<Gift[]>) => {
+        setInventory: (_state, action: PayloadAction<Gift[]>) => {
             return action.payload;
         },
     },
@@ -50,7 +50,7 @@ export const friendsSlice = createSlice({
             state[index] = action.payload;
             return state
         },
-        setFriends: (state, action: PayloadAction<Friend[]>) => {
+        setFriends: (_state, action: PayloadAction<Friend[]>) => {
             return action.payload;
         },
     },
@@ -61,7 +61,7 @@ export const moneySlice = createSlice({
     name: "money",
     initialState: 0 as number,
     reducers: {
-        setMoney: (state, action: PayloadAction<number>) => {
+        setMoney: (_state, action: PayloadAction<number>) => {
             return action.payload;
         },
         addMoney: (state, action: PayloadAction<number>) => {
@@ -76,7 +76,7 @@ export const houseSlice = createSlice({
     name: "house",
     initialState: AllHouses[0] as House,
     reducers: {
-        setHouse: (state, action: PayloadAction<House>) => {
+        setHouse: (_state, action: PayloadAction<House>) => {
             return action.payload;
         },
     },
@@ -96,7 +96,7 @@ export const discoveredHangoutsSlice = createSlice({
             state.push(action.payload);
             return state
         },
-        setDiscoveredHangouts: (state, action: PayloadAction<Hangout[]>) => {
+        setDiscoveredHangouts: (_state, action: PayloadAction<Hangout[]>) => {
             return action.payload;
         },
     },
@@ -107,8 +107,8 @@ export const currentWeekSlice = createSlice({
     name: "currentWeek",
     initialState: 0 as number,
     reducers: {
-        setCurrentWeek: (state, action: PayloadAction<number>) => {
-            state = action.payload;
+        setCurrentWeek: (_state, action: PayloadAction<number>) => {
+            return action.payload;
         },
         nextWeek: (state) => {
             return state++
@@ -121,7 +121,7 @@ export const actionPointsSlice = createSlice({
     name: "actionPoints",
     initialState: 0 as number,
     reducers: {
-        setActionPoints: (state, action: PayloadAction<number>) => {
+        setActionPoints: (_state, action: PayloadAction<number>) => {
             return action.payload;
         },
         useActionPoints: (state, action: PayloadAction<number>) => {

@@ -6,13 +6,13 @@ import Phone from "./Phone";
 import { useState } from "react";
 import type { Hangout as HangoutType } from "@/objects/hangout";
 import { nextWeek, setActionPoints } from "@/state/gameStateSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "@/state/hooks";
 
 function GameMain() {
-  const friends = useSelector((state) => state.friends);
-  const money = useSelector((state) => state.money);
-  const currentWeek = useSelector((state) => state.currentWeek);
-  const actionPoints = useSelector((state) => state.actionPoints);
+  const friends = useAppSelector((state) => state.friends);
+  const money = useAppSelector((state) => state.money);
+  const currentWeek = useAppSelector((state) => state.currentWeek);
+  const actionPoints = useAppSelector((state) => state.actionPoints);
 
   const renderScreen = () => {
     switch (activeScreen) {
@@ -22,7 +22,7 @@ function GameMain() {
         return <Hangout selectedHangout={selectedHangout} />;
     }
   };
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [activeScreen, setActiveScreen] = useState(ScreenEnum.House);
   const [selectedHangout, setSelectedHangout] = useState(
     undefined as HangoutType | undefined,
