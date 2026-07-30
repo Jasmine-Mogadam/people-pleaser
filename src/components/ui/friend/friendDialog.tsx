@@ -8,10 +8,12 @@ function FriendDialog({
   friend,
   revealAll = false,
   showFriendship = true,
+  compact = false,
 }: {
   friend: Friend;
   revealAll?: boolean;
   showFriendship?: boolean;
+  compact?: boolean;
 }) {
   const record = useAppSelector((state) =>
     state.friends.find((f) => f.id === friend.id),
@@ -23,6 +25,7 @@ function FriendDialog({
         render={
           <FriendThumb
             friend={friend}
+            compact={compact}
             friendshipLevel={showFriendship ? record?.friendshipLevel : undefined}
           />
         }

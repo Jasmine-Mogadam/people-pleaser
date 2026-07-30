@@ -42,7 +42,7 @@ function StartMenu({
         <div className="hero">
           <h1>People Pleaser</h1>
         </div>
-        <p className="max-w-md text-center text-sm text-muted-foreground">
+        <p className="tagline">
           You have {GAME_LENGTH_WEEKS} weeks and a handful of action points each
           week. Spend them on people.
         </p>
@@ -56,7 +56,9 @@ function StartMenu({
           </Button>
           {hasGameData() ? (
             <Dialog>
-              <DialogTrigger className="StartNewGame">New Game</DialogTrigger>
+              <DialogTrigger
+                render={<Button variant="outline">New Game</Button>}
+              />
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Are you sure?</DialogTitle>
@@ -80,18 +82,16 @@ function StartMenu({
               </DialogContent>
             </Dialog>
           ) : (
-            <Button className="StartNewGame" onClick={startNewGame}>
-              Start New Game
-            </Button>
+            <Button onClick={startNewGame}>Start New Game</Button>
           )}
           <Button
-            className="Gallery"
+            variant="outline"
             onClick={() => setActiveScreen(ScreenEnum.Gallery)}
           >
             Gallery
           </Button>
           <Button
-            className="About"
+            variant="outline"
             onClick={() => setActiveScreen(ScreenEnum.About)}
           >
             About

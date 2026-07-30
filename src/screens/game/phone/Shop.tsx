@@ -5,6 +5,7 @@ import { AllGifts } from "@/objects/catalog";
 import { AllHouses, getHouse } from "@/objects/house";
 import { AllUpgrades, getUpgrade } from "@/objects/upgrade";
 import { buyGift, moveHouse, purchaseUpgrade } from "@/game/interactions";
+import { useToast } from "@/components/ui/toast";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";
@@ -17,27 +18,40 @@ function Shop({
   setActiveScreen: (screen: string) => void;
 }) {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const money = useAppSelector((state) => state.money);
   const inventory = useAppSelector((state) => state.inventory);
   const upgrades = useAppSelector((state) => state.upgrades);
   const houseState = useAppSelector((state) => state.house);
   const [tab, setTab] = useState(Tab.Gifts);
-  const [notice, setNotice] = useState<string | null>(null);
 
-  const owned = (giftId: string) =>
-    inventory.filter((id) => id === giftId).length;
+  const owned = (giftId: string) => inventory.filter((id) => id === giftId).length;
+
+  // Purchases either work or explain why not, so the toast tone follows the
+  // money changing rather than the message text.
+  const buy = (title: string, run: () => string) => {
+    const before = store.getState().money;
+    const message = run();
+    toast({
+      title,
+      message,
+      tone: store.getState().money === before ? "error" : "default",
+    });
+  };
 
   return (
     <div className="screen">
-      <div className="header">
-        <BackButton setActiveScreen={setActiveScreen} /> Shop · $
-        {Math.round(money)}
+      <div className="screenHeader">
+        <BackButton setActiveScreen={setActiveScreen} />
+        <span>Shop</span>
+        <span className="headerMoney">${Math.round(money)}</span>
       </div>
 
-      <div className="flex gap-1">
+      <div className="tabRow">
         {Object.values(Tab).map((name) => (
           <Button
             key={name}
+            size="sm"
             variant={tab === name ? "default" : "outline"}
             onClick={() => setTab(name)}
           >
@@ -47,25 +61,31 @@ function Shop({
       </div>
 
       {tab === Tab.Gifts && (
-        <div className="grid gap-2">
-          <p className="text-sm text-muted-foreground">
-            Gifts are kept in your bag until you hand them over from Contacts.
+        <div className="grid gap-1.5">
+          <p className="phoneHint">
+            Gifts sit in your bag until you hand one over from Chat.
           </p>
           {AllGifts.map((gift) => (
-            <div key={gift.id} className="flex items-center gap-2">
-              <EntityImage src={gift.image} name={gift.name} size={40} />
-              <div className="grow">
-                <div>{gift.name}</div>
-                <div className="text-xs text-muted-foreground">
+            <div key={gift.id} className="shopRow">
+              <EntityImage
+                src={gift.image}
+                name={gift.name}
+                icon={gift.icon}
+                size={34}
+              />
+              <span className="rowText">
+                <span className="rowTitle">{gift.name}</span>
+                <span className="rowMeta">
                   ${gift.price}
                   {owned(gift.id) > 0 && ` · ${owned(gift.id)} in bag`}
-                </div>
-              </div>
+                </span>
+              </span>
               <Button
+                size="sm"
                 variant="outline"
                 disabled={money < gift.price}
                 onClick={() =>
-                  setNotice(buyGift(dispatch, store.getState(), gift.id))
+                  buy(gift.name, () => buyGift(dispatch, store.getState(), gift.id))
                 }
               >
                 Buy
@@ -76,30 +96,30 @@ function Shop({
       )}
 
       {tab === Tab.Upgrades && (
-        <div className="grid gap-2">
-          <p className="text-sm text-muted-foreground">
+        <div className="grid gap-1.5">
+          <p className="phoneHint">
             Upgrades apply from the start of the next week.
           </p>
           {AllUpgrades.map((upgrade) => {
             const bought = upgrades.includes(upgrade.id);
             const blocked =
-              upgrade.requires !== undefined &&
-              !upgrades.includes(upgrade.requires);
+              upgrade.requires !== undefined && !upgrades.includes(upgrade.requires);
             return (
-              <div key={upgrade.id} className="flex items-center gap-2">
-                <div className="grow">
-                  <div>{upgrade.name}</div>
-                  <div className="text-xs text-muted-foreground">
+              <div key={upgrade.id} className="shopRow">
+                <span className="rowText">
+                  <span className="rowTitle">{upgrade.name}</span>
+                  <span className="rowMeta">
                     ${upgrade.price}
                     {blocked &&
                       ` · needs ${getUpgrade(upgrade.requires!)?.name ?? upgrade.requires}`}
-                  </div>
-                </div>
+                  </span>
+                </span>
                 <Button
+                  size="sm"
                   variant="outline"
                   disabled={bought || blocked || money < upgrade.price}
                   onClick={() =>
-                    setNotice(
+                    buy(upgrade.name, () =>
                       purchaseUpgrade(dispatch, store.getState(), upgrade.id),
                     )
                   }
@@ -113,27 +133,30 @@ function Shop({
       )}
 
       {tab === Tab.Housing && (
-        <div className="grid gap-2">
-          <p className="text-sm text-muted-foreground">
-            A bigger place means more roommates, and roommates do not drift away.
+        <div className="grid gap-1.5">
+          <p className="phoneHint">
+            A bigger place means more roommates, and roommates never drift away.
           </p>
           {AllHouses.map((house) => {
             const current = house.id === houseState.id;
             const downsize = house.price < getHouse(houseState.id).price;
             return (
-              <div key={house.id} className="flex items-center gap-2">
-                <EntityImage src={house.image} name={house.name} size={40} />
-                <div className="grow">
-                  <div>{house.name}</div>
-                  <div className="text-xs text-muted-foreground">
+              <div key={house.id} className="shopRow">
+                <EntityImage src={house.image} name={house.name} size={34} />
+                <span className="rowText">
+                  <span className="rowTitle">{house.name}</span>
+                  <span className="rowMeta">
                     ${house.price} · {house.maxRoomates} roommate(s)
-                  </div>
-                </div>
+                  </span>
+                </span>
                 <Button
+                  size="sm"
                   variant="outline"
                   disabled={current || downsize || money < house.price}
                   onClick={() =>
-                    setNotice(moveHouse(dispatch, store.getState(), house.id))
+                    buy(house.name, () =>
+                      moveHouse(dispatch, store.getState(), house.id),
+                    )
                   }
                 >
                   {current ? "Current" : downsize ? "—" : "Move in"}
@@ -142,12 +165,6 @@ function Shop({
             );
           })}
         </div>
-      )}
-
-      {notice && (
-        <p className="text-sm" role="status">
-          {notice}
-        </p>
       )}
     </div>
   );

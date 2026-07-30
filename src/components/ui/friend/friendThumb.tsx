@@ -16,6 +16,7 @@ function FriendThumb({
   isActive,
   friendshipLevel,
   disabled = false,
+  compact = false,
   onPick,
   ...rest
 }: {
@@ -24,6 +25,7 @@ function FriendThumb({
   /** Left out in the gallery, where friendship does not apply. */
   friendshipLevel?: number;
   disabled?: boolean;
+  compact?: boolean;
   onPick?: (friend: Friend) => void;
 } & ButtonProps) {
   const handleClick: NonNullable<ButtonProps["onClick"]> = (event) => {
@@ -37,24 +39,24 @@ function FriendThumb({
       {...rest}
       aria-pressed={isActive}
       disabled={disabled}
-      className={`border-3 w-40 h-40 overflow-hidden relative m-2 p-1.5 ${
-        isActive ? "border-primary" : ""
+      className={`friendThumb ${compact ? "friendThumbCompact" : ""} ${
+        isActive ? "friendThumbActive" : ""
       } ${rest.className ?? ""}`}
-      style={{ backgroundColor: isActive ? "var(--ring)" : undefined }}
       onClick={handleClick}
     >
-      <EntityImage src={friend.image} name={friend.name} size="100%" />
-      <div
-        className="absolute bottom-0 left-0 right-0 p-1 text-xs"
-        style={{ backgroundColor: "rgba(0, 0, 0, 0.75)", color: "white" }}
-      >
-        <div>{friend.name}</div>
+      <EntityImage
+        src={friend.image}
+        name={friend.name}
+        className="friendThumbArt"
+      />
+      <span className="friendThumbCaption">
+        <span className="friendThumbName">{friend.name}</span>
         {friendshipLevel !== undefined && (
-          <div className="opacity-80">
+          <span className="friendThumbTier">
             {friendshipTier(friendshipLevel)} · {Math.round(friendshipLevel)}
-          </div>
+          </span>
         )}
-      </div>
+      </span>
     </Button>
   );
 }

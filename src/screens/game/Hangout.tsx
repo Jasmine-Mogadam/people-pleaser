@@ -1,15 +1,12 @@
 import { Button } from "@/components/ui/button";
 import FriendSearch from "@/components/ui/friend/friendSearch";
 import EntityImage from "@/components/ui/entityImage";
-import ResultDialog from "@/components/ui/resultDialog";
 import { getFriend } from "@/objects/catalog";
 import type { Friend } from "@/objects/friend";
 import type { Hangout } from "@/objects/hangout";
-import {
-  startHangout,
-  visitAlone,
-  type InteractionResult,
-} from "@/game/interactions";
+import { startHangout, visitAlone } from "@/game/interactions";
+import { toastFromResult } from "@/game/resultToast";
+import { useToast } from "@/components/ui/toast";
 import { ActionPointCost } from "@/game/rules";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
@@ -24,11 +21,11 @@ function HangoutDisplay({
   onDone: () => void;
 }) {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const friendRecords = useAppSelector((state) => state.friends);
   const money = useAppSelector((state) => state.money);
   const actionPoints = useAppSelector((state) => state.actionPoints);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [result, setResult] = useState<InteractionResult | null>(null);
 
   if (!selectedHangout) return null;
 
@@ -57,51 +54,86 @@ function HangoutDisplay({
       selectedHangout.id,
       selectedIds,
     );
-    setResult(outcome);
+    toast(toastFromResult(outcome));
     if (outcome.ok) setSelectedIds([]);
   };
 
   return (
-    <>
-      <div className="p-3">
-        <h1 className="text-lg font-semibold">{selectedHangout.name}</h1>
-        <p className="text-sm text-muted-foreground">
-          {selectedHangout.description}
-        </p>
-        <p className="text-sm">
+    <div className="grid gap-4">
+      <div className="grid gap-1">
+        <h1 className="sceneTitle">{selectedHangout.name}</h1>
+        <p className="sceneMeta">{selectedHangout.description}</p>
+        <p className="sceneMeta">
           Fits {selectedHangout.capacity} · ${selectedHangout.costPerPerson} per
           person · {ActionPointCost.Hangout} AP
         </p>
       </div>
 
-      <div className="scaleup">
-        <div
-          className="hangout"
-          style={
-            selectedHangout.image
-              ? { backgroundImage: `url(${selectedHangout.image})` }
-              : undefined
-          }
-        >
-          {!selectedHangout.image && (
-            <div className="hangoutPlaceholder">{selectedHangout.name}</div>
-          )}
-          <div className="attendees">
-            {selectedIds.map((id) => {
-              const friend = getFriend(id);
-              if (!friend) return null;
-              return (
-                <div className="friendHolder" key={id}>
-                  <EntityImage src={friend.image} name={friend.name} size={90} />
-                </div>
-              );
-            })}
-          </div>
+      <div
+        className="scene"
+        style={
+          selectedHangout.image
+            ? { backgroundImage: `url(${selectedHangout.image})` }
+            : undefined
+        }
+      >
+        {!selectedHangout.image && (
+          <div className="scenePlaceholder">{selectedHangout.name}</div>
+        )}
+        <div className="attendees">
+          {selectedIds.map((id) => {
+            const friend = getFriend(id);
+            if (!friend) return null;
+            return (
+              <div className="attendee" key={id}>
+                <EntityImage src={friend.image} name={friend.name} size={110} />
+              </div>
+            );
+          })}
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          onClick={go}
+          disabled={
+            selectedIds.length === 0 ||
+            actionPoints < ActionPointCost.Hangout ||
+            cost > money
+          }
+        >
+          Hang out · {ActionPointCost.Hangout} AP, ${cost}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() =>
+            toast(
+              toastFromResult(
+                visitAlone(dispatch, store.getState(), selectedHangout.id),
+              ),
+            )
+          }
+          disabled={
+            actionPoints < ActionPointCost.SoloVisit ||
+            selectedHangout.costPerPerson > money
+          }
+        >
+          Go alone · {ActionPointCost.SoloVisit} AP, $
+          {selectedHangout.costPerPerson}
+        </Button>
+        <Button variant="ghost" onClick={onDone}>
+          Go home
+        </Button>
+      </div>
+
+      {actionPoints < ActionPointCost.SoloVisit && (
+        <p className="text-sm text-destructive">
+          No action points left this week.
+        </p>
+      )}
+
       {met.length === 0 ? (
-        <p className="p-3 text-sm text-muted-foreground">
+        <p className="sceneMeta">
           Nobody to invite yet. Go alone and see who turns up, or try WormGround
           on your phone.
         </p>
@@ -114,54 +146,7 @@ function HangoutDisplay({
           onToggle={toggle}
         />
       )}
-
-      <div className="flex flex-wrap items-center gap-3 p-3">
-        <Button
-          onClick={go}
-          disabled={
-            selectedIds.length === 0 ||
-            actionPoints < ActionPointCost.Hangout ||
-            cost > money
-          }
-        >
-          Hangout{" "}
-          <i>
-            Cost: {ActionPointCost.Hangout} AP, ${cost}
-          </i>
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() =>
-            setResult(visitAlone(dispatch, store.getState(), selectedHangout.id))
-          }
-          disabled={
-            actionPoints < ActionPointCost.SoloVisit ||
-            selectedHangout.costPerPerson > money
-          }
-        >
-          Go alone{" "}
-          <i>
-            Cost: {ActionPointCost.SoloVisit} AP, $
-            {selectedHangout.costPerPerson}
-          </i>
-        </Button>
-        <Button variant="outline" onClick={onDone}>
-          Go home
-        </Button>
-        {actionPoints < ActionPointCost.Hangout && (
-          <span className="text-sm text-destructive">
-            Not enough action points this week.
-          </span>
-        )}
-        {cost > money && (
-          <span className="text-sm text-destructive">
-            That costs ${cost} and you have ${Math.round(money)}.
-          </span>
-        )}
-      </div>
-
-      <ResultDialog result={result} onClose={() => setResult(null)} />
-    </>
+    </div>
   );
 }
 

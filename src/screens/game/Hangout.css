@@ -1,38 +1,16 @@
-.scaleup {
-  height: 50vh;
-}
-
-.hangout {
-  height: 100%;
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  position: relative;
-}
-
-.hangoutPlaceholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-  color: var(--muted-foreground);
-}
-
 .attendees {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
 }
 
-.friendHolder {
+.attendee {
   display: flex;
   align-items: flex-end;
+  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.25));
 }

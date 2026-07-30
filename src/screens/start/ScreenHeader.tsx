@@ -1,5 +1,7 @@
 import { ArrowLeftIcon } from "lucide-react";
 import { ScreenEnum } from "./screenEnum";
+import { Button } from "@/components/ui/button";
+
 function ScreenHeader({
   setActiveScreen,
   title,
@@ -8,15 +10,17 @@ function ScreenHeader({
   title: string;
 }) {
   return (
-    <>
-      <div className="flex align-center m-5" style={{ alignItems: "center" }}>
-        <ArrowLeftIcon
-          className="h-6 w-6 mr-5 h-10 w-10"
-          onClick={() => setActiveScreen(ScreenEnum.Main)}
-        />
-        <h1>{title}</h1>
-      </div>
-    </>
+    <div className="flex items-center gap-3 p-5">
+      <Button
+        variant="outline"
+        size="icon"
+        aria-label="Back to menu"
+        onClick={() => setActiveScreen(ScreenEnum.Main)}
+      >
+        <ArrowLeftIcon />
+      </Button>
+      <h1 className="m-0 text-2xl">{title}</h1>
+    </div>
   );
 }
 

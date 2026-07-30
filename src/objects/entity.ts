@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import type { Friend } from "./friend";
 import type { Preference } from "./preference";
 
@@ -58,6 +59,8 @@ abstract class GameEntity {
     abstract readonly kind: EntityKind;
     name: string;
     description: string;
+    /** Stands in for drawn art. Gifts use one; characters and places have images. */
+    icon?: LucideIcon;
 
     constructor(name: string, description: string) {
         this.name = name;

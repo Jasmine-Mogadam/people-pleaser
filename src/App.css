@@ -130,6 +130,277 @@
   }
 }
 
+/* Character thumbnails. The compact variant is for the phone's narrow screens. */
+.friendGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.friendGridCompact {
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.friendThumb {
+  position: relative;
+  height: auto;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  border-width: 2px;
+}
+
+.friendThumbActive {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+}
+
+.friendThumbArt {
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  object-fit: contain;
+}
+
+.friendThumbCaption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  padding: 3px 6px;
+  background: rgb(0 0 0 / 0.72);
+  color: white;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.friendThumbCompact .friendThumbCaption {
+  font-size: 10px;
+  padding: 2px 4px;
+}
+
+.friendThumbName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friendThumbTier {
+  font-size: 0.85em;
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Phone rows and controls. */
+.tabRow {
+  display: flex;
+  gap: 6px;
+}
+
+.shopRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.headerMoney {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.statList {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  font-size: 13px;
+}
+
+.statList dt {
+  color: var(--muted-foreground);
+}
+
+.statList dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.giftRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--background);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.switch {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  width: 40px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--muted);
+  transition: background 0.2s ease;
+}
+
+.switchOn {
+  background: var(--primary);
+}
+
+.switchKnob {
+  height: 18px;
+  width: 18px;
+  border-radius: 100%;
+  background: white;
+  transition: translate 0.2s ease;
+}
+
+.switchOn .switchKnob {
+  translate: 18px 0;
+}
+
+/* Toasts sit top left: the phone drawer owns the bottom right, and the action
+   buttons own the bottom left, so anywhere else would cover something the
+   player is about to click. */
+.toastViewport {
+  position: fixed;
+  left: 16px;
+  top: 72px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  width: 330px;
+  max-width: calc(100vw - 32px);
+  pointer-events: none;
+}
+
+.toast {
+  position: relative;
+  pointer-events: auto;
+  display: grid;
+  gap: 6px;
+  padding: 12px 34px 12px 14px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.15);
+  text-align: left;
+  animation: toastIn 0.22s ease;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.toastError {
+  border-color: var(--destructive);
+}
+
+.toastError .toastTitle {
+  color: var(--destructive);
+}
+
+.toastClose {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  height: 22px;
+  width: 22px;
+  border: none;
+  border-radius: 100%;
+  background: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.toastClose:hover {
+  background: var(--muted);
+}
+
+.toastTitle {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.toastMessage,
+.toastNote {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.toastNote {
+  color: var(--foreground);
+}
+
+.toastLine {
+  display: grid;
+  gap: 3px;
+}
+
+.toastLineHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.toastValue {
+  font-variant-numeric: tabular-nums;
+}
+
+.toastBar {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--muted);
+  overflow: hidden;
+}
+
+.toastBarFill {
+  height: 100%;
+  background: var(--primary);
+}
+
+.toastSub {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
 /* Accessibility settings. App.tsx puts these classes on <html>. */
 html.reduced-motion,
 html.reduced-motion * {

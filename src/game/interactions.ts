@@ -113,6 +113,21 @@ function bestCase(idealAmount: number, gained: number): number {
 }
 
 /**
+ * Player-facing reasons describe the effect, never the maths. The bar already
+ * shows how well it went, and exposing the multipliers would just turn the game
+ * into a spreadsheet.
+ */
+function repeatReason(repeats: number): string {
+    return repeats === 1
+        ? "Already saw them once this week"
+        : `Already saw them ${repeats} times this week`;
+}
+
+function opinionReason(opinion: string, thing: string): string {
+    return `${opinion}s ${thing}`;
+}
+
+/**
  * Reveals one preference the player has not seen yet, so chatting is how you
  * learn what to buy and where to go.
  */
@@ -184,11 +199,7 @@ export function chatWithFriend(
     const max = bestCase(CHAT_BASE_GAIN, gained);
 
     const reasons: string[] = [];
-    if (repeats > 0) {
-        reasons.push(
-            `Already contacted ${repeats}x this week (x${diminishingMultiplier(repeats).toFixed(2)})`,
-        );
-    }
+    if (repeats > 0) reasons.push(repeatReason(repeats));
     if (headroom(state, friendId) < CHAT_BASE_GAIN) reasons.push("Close to maximum friendship");
 
     dispatch(spendActionPoints(ActionPointCost.Chat));
@@ -248,7 +259,7 @@ export function visitAlone(
         title: `${hangout.name}, on your own`,
         message: metFriend
             ? ""
-            : "Nobody worth talking to today. Going alone only ever finds people, it never builds friendship.",
+            : "Nobody new turned up. Going alone only ever finds people, it never builds friendship.",
         gains: [],
         apSpent: ActionPointCost.SoloVisit,
         moneySpent: hangout.costPerPerson,
@@ -294,7 +305,7 @@ export function startHangout(
         const opinion = friend.preferenceFor(hangout);
         if (opinion) {
             amount *= PreferenceMultiplier[opinion];
-            reasons.push(`${opinion}s ${hangout.name} (x${PreferenceMultiplier[opinion]})`);
+            reasons.push(opinionReason(opinion, hangout.name));
             // Going somewhere they feel strongly about makes that opinion obvious.
             if (!knownKeys(state, friend.id).includes(hangout.key)) {
                 learned.push(`${friend.name} ${opinion.toLowerCase()}s ${hangout.name}.`);
@@ -308,11 +319,11 @@ export function startHangout(
                 const feeling = friend.preferenceFor(other);
                 if (feeling === PreferenceEnum.Like || feeling === PreferenceEnum.Favorite) {
                     amount += GROUP_LIKE_BONUS;
-                    reasons.push(`${other.name} came along (+${GROUP_LIKE_BONUS})`);
+                    reasons.push(`Glad ${other.name} came along`);
                     dispatch(revealPreference({ id: friend.id, key: other.key }));
                 } else if (feeling === PreferenceEnum.Dislike || feeling === PreferenceEnum.Hate) {
                     amount -= GROUP_DISLIKE_PENALTY;
-                    reasons.push(`${other.name} came along (-${GROUP_DISLIKE_PENALTY})`);
+                    reasons.push(`Put off by ${other.name} coming along`);
                     dispatch(revealPreference({ id: friend.id, key: other.key }));
                 }
             });
@@ -320,7 +331,7 @@ export function startHangout(
         const repeats = timesSeenThisWeek(state, friend.id);
         if (repeats > 0) {
             amount *= diminishingMultiplier(repeats);
-            reasons.push(`Already seen ${repeats}x this week (x${diminishingMultiplier(repeats).toFixed(2)})`);
+            reasons.push(repeatReason(repeats));
         }
 
         const gained = Math.min(Math.round(amount * roll()), headroom(state, friend.id));
@@ -376,7 +387,7 @@ export function giveGift(
     const opinion = friend.preferenceFor(gift);
     if (opinion) {
         amount *= PreferenceMultiplier[opinion];
-        reasons.push(`${opinion}s ${gift.name} (x${PreferenceMultiplier[opinion]})`);
+        reasons.push(opinionReason(opinion, gift.name));
         dispatch(revealPreference({ id: friend.id, key: gift.key }));
     } else {
         reasons.push("No strong feelings about it");
@@ -385,7 +396,7 @@ export function giveGift(
     const repeats = timesSeenThisWeek(state, friendId);
     if (repeats > 0) {
         amount *= diminishingMultiplier(repeats);
-        reasons.push(`Already seen ${repeats}x this week (x${diminishingMultiplier(repeats).toFixed(2)})`);
+        reasons.push(repeatReason(repeats));
     }
 
     const raw = Math.round(amount * roll());
@@ -529,7 +540,7 @@ export function browseWormGround(dispatch: AppDispatch, state: RootState): Inter
         title: "WormGround",
         message:
             learned.length === 0 && !metFriend
-                ? "Nothing useful this time. Roughly half of scrolls turn something up."
+                ? "Nothing useful this time. Try again next week."
                 : "",
         gains: [],
         apSpent: ActionPointCost.Browse,

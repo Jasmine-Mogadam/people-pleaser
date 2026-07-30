@@ -18,9 +18,14 @@ function PreferenceList({
   return (
     <>
       {preferences.map((p) => (
-        <li key={p.target.key} className="flex items-center gap-2">
-          <EntityImage src={p.target.image} name={p.target.name} size={32} />
-          <span>{p.target.name}</span>
+        <li key={p.target.key} className="flex items-center gap-2 text-sm">
+          <EntityImage
+            src={p.target.image}
+            name={p.target.name}
+            icon={p.target.icon}
+            size={30}
+          />
+          <span className="truncate">{p.target.name}</span>
         </li>
       ))}
     </>
@@ -50,7 +55,9 @@ function FriendDetail({
     : friend.preferences.length - known(friend.preferences).length;
 
   return (
-    <div className="grid gap-4">
+    // Long preference lists must scroll inside the dialog rather than push it
+    // off the bottom of the screen.
+    <div className="grid max-h-[70vh] gap-4 overflow-y-auto">
       <div className="flex gap-4">
         <EntityImage src={friend.image} name={friend.name} size={120} />
         <div className="grid content-start gap-1">
@@ -74,8 +81,8 @@ function FriendDetail({
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <h2 className="font-medium">Likes</h2>
+        <div className="min-w-0">
+          <h2 className="text-base font-medium">Likes</h2>
           <ul className="grid gap-1">
             <PreferenceList
               preferences={known(friend.getLikes())}
@@ -83,8 +90,8 @@ function FriendDetail({
             />
           </ul>
         </div>
-        <div>
-          <h2 className="font-medium">Dislikes</h2>
+        <div className="min-w-0">
+          <h2 className="text-base font-medium">Dislikes</h2>
           <ul className="grid gap-1">
             <PreferenceList
               preferences={known(friend.getDislikes())}

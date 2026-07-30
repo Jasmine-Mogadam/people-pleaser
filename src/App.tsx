@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import "./App.css";
 import StartMenu from "./screens/start/StartMenu";
+import { ToastProvider } from "./components/ui/toast";
 import { useAppSelector } from "./state/hooks";
 
 function App() {
@@ -14,7 +15,11 @@ function App() {
     root.classList.toggle("large-text", settings.largeText);
   }, [settings]);
 
-  return <StartMenu />;
+  return (
+    <ToastProvider>
+      <StartMenu />
+    </ToastProvider>
+  );
 }
 
 export default App;

@@ -1,0 +1,88 @@
+.gameLayout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  text-align: left;
+}
+
+.gameHeader {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--background) 88%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.statIcon {
+  height: 17px;
+  width: 17px;
+  color: var(--primary);
+}
+
+.statMuted {
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+
+.endWeek {
+  margin-left: auto;
+}
+
+.gameStage {
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  /* Room for the closed phone handle so nothing hides behind it. */
+  padding-bottom: 76px;
+}
+
+/* Shared scene frame for the apartment and hangout backdrops. */
+.scene {
+  position: relative;
+  height: min(52vh, 460px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background-color: var(--muted);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.scenePlaceholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+  font-size: 14px;
+}
+
+.sceneTitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
+}
+
+.sceneMeta {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}

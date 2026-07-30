@@ -1,29 +1,49 @@
-.menu {
-  display: flex;
-  flex-direction: column;
-}
-
-.menu > * {
-  margin: 10px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
 #center {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 20px;
   place-content: center;
   place-items: center;
   flex-grow: 1;
+  padding: 40px 20px;
+  text-align: center;
 
   @media (max-width: 1024px) {
     padding: 32px 20px 24px;
     gap: 18px;
   }
+}
+
+.hero {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.heroArt {
+  width: min(320px, 70vw);
+  height: auto;
+}
+
+.hero h1 {
+  margin: 0;
+}
+
+.tagline {
+  max-width: 30rem;
+  color: var(--muted-foreground);
+  font-size: 15px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(280px, 80vw);
+}
+
+.menu > * {
+  width: 100%;
 }
 
 #spacer {
@@ -34,8 +54,23 @@
   }
 }
 
-a {
-  color: blue;
+/* The gallery and about screens share this simple page frame. */
+.pageBody {
+  padding: 0 20px 40px;
+  text-align: left;
+}
+
+.pageBody a {
+  color: var(--primary);
   text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.linkList {
   display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
 }

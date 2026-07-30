@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import BackButton from "./BackButton";
 import { toggleSetting, type SettingsState } from "@/state/gameStateSlice";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
@@ -35,25 +34,30 @@ function Settings({
 
   return (
     <div className="screen">
-      <div className="header">
-        <BackButton setActiveScreen={setActiveScreen} /> Settings
+      <div className="screenHeader">
+        <BackButton setActiveScreen={setActiveScreen} />
+        <span>Settings</span>
       </div>
-      <div className="grid gap-2">
+      <div className="grid gap-1.5">
         {options.map((option) => (
-          <Button
+          <button
             key={option.key}
-            variant={settings[option.key] ? "default" : "outline"}
-            aria-pressed={settings[option.key]}
-            className="h-auto justify-start py-2 text-left"
+            className="toggleRow"
+            role="switch"
+            aria-checked={settings[option.key]}
             onClick={() => dispatch(toggleSetting(option.key))}
           >
-            <span className="grid">
-              <span>
-                {option.label} — {settings[option.key] ? "On" : "Off"}
-              </span>
-              <span className="text-xs opacity-80">{option.description}</span>
+            <span className="rowText">
+              <span className="rowTitle">{option.label}</span>
+              <span className="rowMeta">{option.description}</span>
             </span>
-          </Button>
+            <span
+              className={`switch ${settings[option.key] ? "switchOn" : ""}`}
+              aria-hidden="true"
+            >
+              <span className="switchKnob" />
+            </span>
+          </button>
         ))}
       </div>
     </div>

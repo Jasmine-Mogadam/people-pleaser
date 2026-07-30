@@ -1,15 +1,12 @@
 import FriendSearch from "@/components/ui/friend/friendSearch";
 import BackButton from "./BackButton";
 import { Button } from "@/components/ui/button";
-import ResultDialog from "@/components/ui/resultDialog";
 import EntityImage from "@/components/ui/entityImage";
 import { getFriend, getGift } from "@/objects/catalog";
 import type { Friend } from "@/objects/friend";
-import {
-  chatWithFriend,
-  giveGift,
-  type InteractionResult,
-} from "@/game/interactions";
+import { chatWithFriend, giveGift } from "@/game/interactions";
+import { toastFromResult } from "@/game/resultToast";
+import { useToast } from "@/components/ui/toast";
 import { ActionPointCost } from "@/game/rules";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
@@ -21,18 +18,18 @@ function Chat({
   setActiveScreen: (screen: string) => void;
 }) {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const friendRecords = useAppSelector((state) => state.friends);
   const inventory = useAppSelector((state) => state.inventory);
   const actionPoints = useAppSelector((state) => state.actionPoints);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [result, setResult] = useState<InteractionResult | null>(null);
 
   const met = friendRecords
     .map((record) => getFriend(record.id))
     .filter((f): f is Friend => Boolean(f));
   const selected = selectedId ? getFriend(selectedId) : null;
 
-  // One row per distinct item, with a count, so a bag of five candies is one button.
+  // One row per distinct item with a count, so a bag of five candies is one button.
   const bag = [...new Set(inventory)].map((id) => ({
     id,
     count: inventory.filter((other) => other === id).length,
@@ -40,12 +37,13 @@ function Chat({
 
   return (
     <div className="screen">
-      <div className="header">
-        <BackButton setActiveScreen={setActiveScreen} /> Chat
+      <div className="screenHeader">
+        <BackButton setActiveScreen={setActiveScreen} />
+        <span>Chat</span>
       </div>
 
       {met.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="phoneHint">
           No contacts yet. WormGround and going out are how you meet people.
         </p>
       ) : (
@@ -53,11 +51,10 @@ function Chat({
           <FriendSearch
             friends={met}
             select={true}
+            compact={true}
             selectedIds={selectedId ? [selectedId] : []}
             onToggle={(friend) =>
-              setSelectedId((current) =>
-                current === friend.id ? null : friend.id,
-              )
+              setSelectedId((current) => (current === friend.id ? null : friend.id))
             }
           />
 
@@ -65,37 +62,41 @@ function Chat({
             <div className="grid gap-2">
               <Button
                 onClick={() =>
-                  setResult(
-                    chatWithFriend(dispatch, store.getState(), selected.id),
+                  toast(
+                    toastFromResult(
+                      chatWithFriend(dispatch, store.getState(), selected.id),
+                    ),
                   )
                 }
                 disabled={actionPoints < ActionPointCost.Chat}
               >
-                Send Message to {selected.name}{" "}
-                <i>Cost: {ActionPointCost.Chat} AP</i>
+                Message {selected.name} ({ActionPointCost.Chat} AP)
               </Button>
 
               {bag.length > 0 && (
-                <div className="grid gap-1">
-                  <span className="text-sm">
+                <div className="grid gap-1.5">
+                  <span className="phoneHint">
                     Give a gift ({ActionPointCost.Gift} AP)
                   </span>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="giftRow">
                     {bag.map((entry) => {
                       const gift = getGift(entry.id);
                       if (!gift) return null;
                       return (
                         <Button
                           key={entry.id}
+                          size="sm"
                           variant="outline"
                           disabled={actionPoints < ActionPointCost.Gift}
                           onClick={() =>
-                            setResult(
-                              giveGift(
-                                dispatch,
-                                store.getState(),
-                                selected.id,
-                                gift.id,
+                            toast(
+                              toastFromResult(
+                                giveGift(
+                                  dispatch,
+                                  store.getState(),
+                                  selected.id,
+                                  gift.id,
+                                ),
                               ),
                             )
                           }
@@ -103,7 +104,8 @@ function Chat({
                           <EntityImage
                             src={gift.image}
                             name={gift.name}
-                            size={24}
+                            icon={gift.icon}
+                            size={20}
                           />
                           {gift.name} ×{entry.count}
                         </Button>
@@ -118,12 +120,10 @@ function Chat({
       )}
 
       {actionPoints <= 0 && (
-        <p className="text-sm text-destructive">
+        <p className="phoneHint">
           No action points left. End the week to get more.
         </p>
       )}
-
-      <ResultDialog result={result} onClose={() => setResult(null)} />
     </div>
   );
 }

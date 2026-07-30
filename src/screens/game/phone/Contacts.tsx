@@ -18,15 +18,16 @@ function Contacts({
 
   return (
     <div className="screen">
-      <div className="header">
-        <BackButton setActiveScreen={setActiveScreen} /> Contacts
+      <div className="screenHeader">
+        <BackButton setActiveScreen={setActiveScreen} />
+        <span>Contacts</span>
       </div>
       {met.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="phoneHint">
           Nobody yet. Scroll WormGround, or pick a place on Maps and go alone.
         </p>
       ) : (
-        <FriendSearch friends={met} />
+        <FriendSearch friends={met} compact={true} />
       )}
     </div>
   );

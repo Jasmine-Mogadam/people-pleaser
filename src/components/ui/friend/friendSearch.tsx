@@ -17,6 +17,7 @@ function FriendSearch({
   maxSelected,
   showFriendship = true,
   revealAll = false,
+  compact = false,
   onToggle = () => {},
 }: {
   friends: Friend[];
@@ -25,6 +26,8 @@ function FriendSearch({
   maxSelected?: number;
   showFriendship?: boolean;
   revealAll?: boolean;
+  /** Smaller thumbnails, for the narrow phone screens. */
+  compact?: boolean;
   onToggle?: (friend: Friend) => void;
 }) {
   const [friendFilter, setFriendFilter] = useState<string>("");
@@ -39,9 +42,9 @@ function FriendSearch({
   const full = maxSelected !== undefined && selectedIds.length >= maxSelected;
 
   return (
-    <>
-      <div className="flex align-center m-5" style={{ alignItems: "center" }}>
-        <Search className="mr-1" />
+    <div className="grid gap-2">
+      <div className="flex items-center gap-2">
+        <Search className="h-4 w-4 shrink-0" />
         <Input
           onChange={(e) => setFriendFilter(e.target.value)}
           placeholder="Character name here..."
@@ -56,13 +59,14 @@ function FriendSearch({
           .
         </i>
       )}
-      <div className="flex flex-wrap">
+      <div className={compact ? "friendGrid friendGridCompact" : "friendGrid"}>
         {filtered.length > 0 ? (
           filtered.map((f) =>
             select ? (
               <FriendThumb
                 friend={f}
                 key={f.id}
+                compact={compact}
                 onPick={onToggle}
                 isActive={selectedIds.includes(f.id)}
                 friendshipLevel={showFriendship ? levelFor(f) : undefined}
@@ -72,16 +76,17 @@ function FriendSearch({
               <FriendDialog
                 friend={f}
                 key={f.id}
+                compact={compact}
                 revealAll={revealAll}
                 showFriendship={showFriendship}
               />
             ),
           )
         ) : (
-          <div>No Friends Found</div>
+          <div className="text-sm text-muted-foreground">No Friends Found</div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 export default FriendSearch;

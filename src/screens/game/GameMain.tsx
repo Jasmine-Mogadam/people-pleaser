@@ -4,22 +4,24 @@ import House from "./House";
 import Hangout from "./Hangout";
 import Phone from "./Phone";
 import Ending from "./Ending";
-import { useEffect, useState } from "react";
+import NewFriendDialog from "@/components/ui/newFriendDialog";
+import { useEffect, useRef, useState } from "react";
 import type { Hangout as HangoutType } from "@/objects/hangout";
+import type { Friend } from "@/objects/friend";
+import { getFriend } from "@/objects/catalog";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";
 import { saveGameState } from "@/state/gameState";
-import { advanceWeek, type WeekReport } from "@/game/interactions";
-import { FRIEND_THRESHOLD, GAME_LENGTH_WEEKS, isGameOver } from "@/game/rules";
+import { advanceWeek } from "@/game/interactions";
+import { useToast } from "@/components/ui/toast";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  CalendarDays,
+  CircleDollarSign,
+  Users,
+  Zap,
+} from "lucide-react";
+import { FRIEND_THRESHOLD, GAME_LENGTH_WEEKS, isGameOver } from "@/game/rules";
+import "./GameMain.css";
 
 function GameMain({
   setActiveScreen: setMenuScreen,
@@ -27,6 +29,7 @@ function GameMain({
   setActiveScreen: (screen: string) => void;
 }) {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const friends = useAppSelector((state) => state.friends);
   const money = useAppSelector((state) => state.money);
   const currentWeek = useAppSelector((state) => state.currentWeek);
@@ -36,7 +39,7 @@ function GameMain({
   const [selectedHangout, setSelectedHangout] = useState(
     undefined as HangoutType | undefined,
   );
-  const [weekReport, setWeekReport] = useState<WeekReport | null>(null);
+  const [newFriend, setNewFriend] = useState<Friend | null>(null);
 
   const realFriends = friends.filter(
     (f) => f.friendshipLevel >= FRIEND_THRESHOLD,
@@ -46,8 +49,32 @@ function GameMain({
   // that happen inside interaction handlers rather than during a render.
   useEffect(() => store.subscribe(saveGameState), []);
 
+  // Meeting someone can happen from a chat, a hangout, a solo visit or a scroll.
+  // Watching the roster here means the celebration works for all of them.
+  const knownCount = useRef(friends.length);
+  useEffect(() => {
+    if (friends.length > knownCount.current) {
+      const latest = friends[friends.length - 1];
+      setNewFriend(getFriend(latest.id) ?? null);
+    }
+    knownCount.current = friends.length;
+  }, [friends]);
+
   const endWeek = () => {
-    setWeekReport(advanceWeek(dispatch, store.getState()));
+    const report = advanceWeek(dispatch, store.getState());
+    if (isGameOver(report.week)) return;
+    toast({
+      title: `Week ${report.week + 1}`,
+      message: `Paycheck $${report.salary}. Action points back to ${report.actionPoints}.`,
+      notes: [
+        report.roommateGains.length > 0
+          ? `Roommates: ${report.roommateGains.join(", ")}`
+          : "",
+        report.drifted.length > 0
+          ? `Drifted apart: ${report.drifted.join(", ")}`
+          : "",
+      ].filter(Boolean),
+    });
   };
 
   const renderScreen = () => {
@@ -69,63 +96,38 @@ function GameMain({
   }
 
   return (
-    <>
-      <div className="header flex flex-wrap items-center gap-4 p-3">
-        <div className="date">
-          Week {currentWeek + 1} of {GAME_LENGTH_WEEKS}
-        </div>
-        <div className="money">${Math.round(money)}</div>
-        <div className="friends">
+    <div className="gameLayout">
+      <header className="gameHeader">
+        <span className="stat">
+          <CalendarDays className="statIcon" />
+          Week {currentWeek + 1}
+          <span className="statMuted">/ {GAME_LENGTH_WEEKS}</span>
+        </span>
+        <span className="stat">
+          <CircleDollarSign className="statIcon" />${Math.round(money)}
+        </span>
+        <span className="stat">
+          <Users className="statIcon" />
           {realFriends} {realFriends === 1 ? "Friend" : "Friends"}
-        </div>
-        <div className="actions">{actionPoints} AP</div>
-        <Button onClick={endWeek}>
-          {actionPoints > 0 ? `End Week (${actionPoints} AP left)` : "End Week"}
+        </span>
+        <span className="stat">
+          <Zap className="statIcon" />
+          {actionPoints} AP
+        </span>
+        <Button className="endWeek" onClick={endWeek}>
+          End Week
         </Button>
-      </div>
+      </header>
+
+      <main className="gameStage">{renderScreen()}</main>
 
       <Phone
         setActiveScreen={setActiveScreen}
         setSelectedHangout={setSelectedHangout}
       />
-      {renderScreen()}
 
-      <Dialog
-        open={weekReport !== null}
-        onOpenChange={(open) => !open && setWeekReport(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Week {weekReport?.week}</DialogTitle>
-            <DialogDescription>
-              Paycheck ${weekReport?.salary}. Action points refilled to{" "}
-              {weekReport?.actionPoints}.
-            </DialogDescription>
-          </DialogHeader>
-          {weekReport && weekReport.roommateGains.length > 0 && (
-            <div className="text-sm">
-              <div className="font-medium">Roommates</div>
-              <div className="text-muted-foreground">
-                {weekReport.roommateGains.join(", ")}
-              </div>
-            </div>
-          )}
-          {weekReport && weekReport.drifted.length > 0 && (
-            <div className="text-sm">
-              <div className="font-medium">
-                Drifted apart (nobody heard from you)
-              </div>
-              <div className="text-muted-foreground">
-                {weekReport.drifted.join(", ")}
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <DialogClose render={<Button>Continue</Button>} />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+      <NewFriendDialog friend={newFriend} onClose={() => setNewFriend(null)} />
+    </div>
   );
 }
 

@@ -1,64 +1,245 @@
-.phone {
-  width: 400px;
-  height: 600px;
-  background-color: var(--accent-bg);
-  padding: 20px;
-  border-color: var(--accent-border);
-  border-width: 30px 25px 50px 25px;
-  border-radius: 1rem;
-  margin: 20px;
-  position: absolute;
+/* The phone is a drawer pinned to the bottom right. Closed, only the handle
+   shows; open, it slides up. It sits above the scene (which used to paint over
+   it and swallow every click) but below dialogs. */
+.phoneShell {
+  position: fixed;
+  /* Hug the right edge of the centred page column, not the viewport, so the
+     drawer does not float off on its own on wide screens. */
+  right: clamp(16px, calc((100vw - 1126px) / 2 + 24px), 50vw);
   bottom: 0;
-  right: 0;
-  transition: bottom 1s;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-  align-content: flex-start;
-  overflow: hidden;
-}
-
-@media (max-width: 440px) {
-  .phone {
-    width: 100%;
-    margin: 0;
-    border-radius: 1rem 1rem 0 0;
-  }
-}
-
-/* Home screen icons only -- the child selector keeps this off the buttons
-   inside apps, which used to inherit the 100x100 icon shape. */
-.phone > button {
-  height: 100px;
-  width: 100px;
-  background-color: unset;
+  z-index: 40;
+  width: 380px;
+  max-width: calc(100vw - 32px);
   display: flex;
   flex-direction: column;
+  transition: transform 0.35s ease;
+  filter: drop-shadow(0 8px 24px rgb(0 0 0 / 0.18));
 }
 
-.phone > button svg {
-  height: 70px;
-  width: 70px;
-  border-radius: 100%;
-  border-width: 5px;
-  padding: 5px;
-  border-color: var(--primary);
-  background-color: var(--primary);
+.phoneShell.isClosed {
+  /* Slide the body away, leaving the handle on screen. */
+  transform: translateY(calc(100% - 46px));
 }
 
-/* Apps get the whole screen and scroll on their own. */
-.phone .screen {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  display: grid;
-  gap: 8px;
-  align-content: start;
+.phoneShell.isOpen {
+  transform: translateY(0);
 }
 
-.phone .screen .header {
+.phoneHandle {
+  height: 46px;
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 6px 14px 0;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 14px 14px 0 0;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: inherit;
+  font-size: 15px;
   font-weight: 600;
+  cursor: pointer;
+  position: relative;
+}
+
+.phoneHandle:hover {
+  filter: brightness(1.08);
+}
+
+/* The drag-style grip sits above the label row rather than across it. */
+.handleGrip {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  translate: -50% 0;
+  height: 12px;
+  width: 26px;
+  opacity: 0.65;
+}
+
+.handleLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.handleMeta {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.handleChevron {
+  transition: rotate 0.35s ease;
+}
+
+.isClosed .handleChevron {
+  rotate: 180deg;
+}
+
+.phone {
+  height: min(560px, 66vh);
+  background: var(--accent-bg);
+  color: var(--foreground);
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-top: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-align: left;
+}
+
+@media (max-width: 440px) {
+  .phoneShell {
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+  .phoneHandle {
+    border-radius: 14px 14px 0 0;
+  }
+}
+
+/* ---------------------------------------------------------------- home screen */
+
+.appGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 4px;
+  align-content: start;
+  overflow-y: auto;
+}
+
+.appIcon {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 6px 2px;
+  background: none;
+  border: none;
+  border-radius: 12px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.appIcon:hover {
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+}
+
+.appGlyph {
+  display: grid;
+  place-items: center;
+  height: 58px;
+  width: 58px;
+  border-radius: 100%;
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.appGlyph svg {
+  height: 30px;
+  width: 30px;
+}
+
+.appLabel {
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  /* Long names like WormGround must not push the grid wider than the phone. */
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------------------- app screens */
+
+.phone .screen {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding-right: 4px;
+}
+
+.phone .screenHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  background: var(--accent-bg);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.phone .back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  width: 30px;
+  border-radius: 100%;
+  border: 1px solid var(--border);
+  background: var(--background);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.phone .back svg {
+  height: 18px;
+  width: 18px;
+}
+
+.phoneHint {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+/* Shared row layout for shop items, map entries and the like. */
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  padding: 8px 10px;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.rowText {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+
+.rowTitle {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowMeta {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.phone .screen * {
+  min-width: 0;
 }

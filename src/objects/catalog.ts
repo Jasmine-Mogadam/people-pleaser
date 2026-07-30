@@ -1,3 +1,15 @@
+import {
+    BookOpen,
+    Candy,
+    Coffee,
+    Gem,
+    Headphones,
+    Rabbit,
+    Shirt,
+    Sticker,
+    Sword,
+    ToyBrick,
+} from "lucide-react";
 import { EntityKindEnum, getEntities, registerEntities } from "./entity";
 import { Friend } from "./friend";
 import { Gift } from "./gift";
@@ -26,16 +38,16 @@ export const AllFriends: Friend[] = [
 ];
 
 export const AllGifts: Gift[] = [
-    new Gift("Candy", [PersonalityEnum.Relaxed, PersonalityEnum.Silly], 10, "wip."),
-    new Gift("Caffeine", [PersonalityEnum.Intense, PersonalityEnum.Refined], 15, "wip."),
-    new Gift("Plushie", [PersonalityEnum.Shy, PersonalityEnum.Relaxed], 10, "wip."),
-    new Gift("Stickers", [PersonalityEnum.Silly, PersonalityEnum.Shy], 10, "wip."),
-    new Gift("Clothes", [PersonalityEnum.Relaxed, PersonalityEnum.Refined], 10, "wip."),
-    new Gift("Book", [PersonalityEnum.Shy, PersonalityEnum.Refined], 10, "wip."),
-    new Gift("Novelty Figurine", [PersonalityEnum.Silly], 50, "wip."),
-    new Gift("Jewelry", [PersonalityEnum.Refined], 50, "wip."),
-    new Gift("Pocket Knife", [PersonalityEnum.Intense], 50, "wip."),
-    new Gift("Headphones", [PersonalityEnum.Shy], 50, "wip."),
+    new Gift("Candy", Candy, [PersonalityEnum.Relaxed, PersonalityEnum.Silly], 10, "wip."),
+    new Gift("Caffeine", Coffee, [PersonalityEnum.Intense, PersonalityEnum.Refined], 15, "wip."),
+    new Gift("Plushie", Rabbit, [PersonalityEnum.Shy, PersonalityEnum.Relaxed], 10, "wip."),
+    new Gift("Stickers", Sticker, [PersonalityEnum.Silly, PersonalityEnum.Shy], 10, "wip."),
+    new Gift("Clothes", Shirt, [PersonalityEnum.Relaxed, PersonalityEnum.Refined], 10, "wip."),
+    new Gift("Book", BookOpen, [PersonalityEnum.Shy, PersonalityEnum.Refined], 10, "wip."),
+    new Gift("Novelty Figurine", ToyBrick, [PersonalityEnum.Silly], 50, "wip."),
+    new Gift("Jewelry", Gem, [PersonalityEnum.Refined], 50, "wip."),
+    new Gift("Pocket Knife", Sword, [PersonalityEnum.Intense], 50, "wip."),
+    new Gift("Headphones", Headphones, [PersonalityEnum.Shy], 50, "wip."),
 ];
 
 // capacity = how many people can come, cost = dollars charged per attendee.

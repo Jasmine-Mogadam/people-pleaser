@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import ResultDialog from "@/components/ui/resultDialog";
 import BackButton from "./BackButton";
-import { browseWormGround, type InteractionResult } from "@/game/interactions";
+import { browseWormGround } from "@/game/interactions";
+import { toastFromResult } from "@/game/resultToast";
+import { useToast } from "@/components/ui/toast";
 import { ActionPointCost } from "@/game/rules";
-import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";
 
@@ -14,28 +14,30 @@ function WormGround({
   setActiveScreen: (screen: string) => void;
 }) {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const actionPoints = useAppSelector((state) => state.actionPoints);
-  const [result, setResult] = useState<InteractionResult | null>(null);
 
   return (
     <div className="screen">
-      <div className="header">
-        <BackButton setActiveScreen={setActiveScreen} /> WormGround
+      <div className="screenHeader">
+        <BackButton setActiveScreen={setActiveScreen} />
+        <span>WormGround</span>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Scrolling costs {ActionPointCost.Browse} AP. Roughly 40% of scrolls turn
-        up a new place, 30% turn up a new person, and the rest turn up nothing.
+      <p className="phoneHint">
+        Scrolling costs {ActionPointCost.Browse} AP. It might turn up a new
+        place, a new person, or nothing at all.
       </p>
       <Button
-        onClick={() => setResult(browseWormGround(dispatch, store.getState()))}
+        onClick={() =>
+          toast(toastFromResult(browseWormGround(dispatch, store.getState())))
+        }
         disabled={actionPoints < ActionPointCost.Browse}
       >
         Scroll ({ActionPointCost.Browse} AP)
       </Button>
       {actionPoints < ActionPointCost.Browse && (
-        <p className="text-sm text-destructive">No action points left.</p>
+        <p className="phoneHint">No action points left this week.</p>
       )}
-      <ResultDialog result={result} onClose={() => setResult(null)} />
     </div>
   );
 }
