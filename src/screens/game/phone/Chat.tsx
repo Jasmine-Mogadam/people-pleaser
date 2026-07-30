@@ -6,7 +6,7 @@ import { getFriend, getGift } from "@/objects/catalog";
 import type { Friend } from "@/objects/friend";
 import { chatWithFriend, giveGift } from "@/game/interactions";
 import { toastFromResult } from "@/game/resultToast";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toastContext";
 import { ActionPointCost } from "@/game/rules";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";

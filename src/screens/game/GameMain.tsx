@@ -13,7 +13,7 @@ import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";
 import { saveGameState } from "@/state/gameState";
 import { advanceWeek } from "@/game/interactions";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toastContext";
 import {
   CalendarDays,
   CircleDollarSign,

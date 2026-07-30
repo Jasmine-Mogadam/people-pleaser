@@ -6,7 +6,7 @@ import type { Friend } from "@/objects/friend";
 import type { Hangout } from "@/objects/hangout";
 import { startHangout, visitAlone } from "@/game/interactions";
 import { toastFromResult } from "@/game/resultToast";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toastContext";
 import { ActionPointCost } from "@/game/rules";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
@@ -102,7 +102,7 @@ function HangoutDisplay({
             cost > money
           }
         >
-          Hang out · {ActionPointCost.Hangout} AP, ${cost}
+          Hang out · {ActionPointCost.Hangout} AP{cost > 0 && `, $${cost}`}
         </Button>
         <Button
           variant="outline"
@@ -118,8 +118,9 @@ function HangoutDisplay({
             selectedHangout.costPerPerson > money
           }
         >
-          Go alone · {ActionPointCost.SoloVisit} AP, $
-          {selectedHangout.costPerPerson}
+          Go alone · {ActionPointCost.SoloVisit} AP
+          {selectedHangout.costPerPerson > 0 &&
+            `, $${selectedHangout.costPerPerson}`}
         </Button>
         <Button variant="ghost" onClick={onDone}>
           Go home

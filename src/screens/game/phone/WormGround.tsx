@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import BackButton from "./BackButton";
 import { browseWormGround } from "@/game/interactions";
 import { toastFromResult } from "@/game/resultToast";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toastContext";
 import { ActionPointCost } from "@/game/rules";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";

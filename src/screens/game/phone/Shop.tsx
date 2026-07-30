@@ -5,7 +5,7 @@ import { AllGifts } from "@/objects/catalog";
 import { AllHouses, getHouse } from "@/objects/house";
 import { AllUpgrades, getUpgrade } from "@/objects/upgrade";
 import { buyGift, moveHouse, purchaseUpgrade } from "@/game/interactions";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toastContext";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";

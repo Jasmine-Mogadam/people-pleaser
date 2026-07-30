@@ -1,45 +1,22 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { X } from "lucide-react";
+import {
+  ToastContext,
+  TOAST_LIFETIME,
+  type Toast,
+  type ToastInput,
+} from "./toastContext";
 
 /**
  * Small non-blocking notifications. Actions report through these instead of a
  * dialog, so playing a turn never costs an extra click to dismiss something.
  */
-
-export interface ToastLine {
-  label: string;
-  value?: string;
-  /** 0-1, drawn as a small bar under the line. */
-  fill?: number;
-  sub?: string[];
-}
-
-export interface ToastInput {
-  title: string;
-  tone?: "default" | "error";
-  message?: string;
-  lines?: ToastLine[];
-  notes?: string[];
-}
-
-interface Toast extends ToastInput {
-  id: number;
-}
-
-const ToastContext = createContext<(toast: ToastInput) => void>(() => {});
-
-/** Errors hang around longer, since they are the ones worth reading. */
-const LIFETIME = { default: 5000, error: 8000 };
-
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const nextId = useRef(0);
@@ -54,10 +31,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((current) => [...current.slice(-3), { ...toast, id }]);
   }, []);
 
-  const value = useMemo(() => push, [push]);
-
   return (
-    <ToastContext.Provider value={value}>
+    <ToastContext.Provider value={push}>
       {children}
       <div className="toastViewport" role="status" aria-live="polite">
         {toasts.map((toast) => (
@@ -78,7 +53,7 @@ function ToastCard({
   useEffect(() => {
     const timer = setTimeout(
       () => onDismiss(toast.id),
-      LIFETIME[toast.tone ?? "default"],
+      TOAST_LIFETIME[toast.tone ?? "default"],
     );
     return () => clearTimeout(timer);
   }, [toast.id, toast.tone, onDismiss]);
@@ -103,10 +78,19 @@ function ToastCard({
             {line.value && <span className="toastValue">{line.value}</span>}
           </div>
           {line.fill !== undefined && (
-            <div className="toastBar">
+            <div
+              className="toastBar"
+              role="meter"
+              aria-valuenow={Math.round((line.fill ?? 0) * 100)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Friendship gained with ${line.label}`}
+            >
               <div
                 className="toastBarFill"
-                style={{ width: `${Math.max(0, Math.min(1, line.fill)) * 100}%` }}
+                style={{
+                  width: `${Math.max(0, Math.min(1, line.fill)) * 100}%`,
+                }}
               />
             </div>
           )}
@@ -125,8 +109,4 @@ function ToastCard({
       ))}
     </div>
   );
-}
-
-export function useToast() {
-  return useContext(ToastContext);
 }

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import BackButton from "./BackButton";
 import { workOvertime } from "@/game/interactions";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toastContext";
 import {
   ActionPointCost,
   MAX_PROMOTIONS,

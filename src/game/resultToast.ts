@@ -1,5 +1,5 @@
 import type { InteractionResult } from "./interactions";
-import type { ToastInput } from "@/components/ui/toast";
+import type { ToastInput } from "@/components/ui/toastContext";
 
 /**
  * Turns an interaction result into a toast. Keeps game types out of the toast

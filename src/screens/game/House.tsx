@@ -3,7 +3,7 @@ import EntityImage from "@/components/ui/entityImage";
 import { getFriend } from "@/objects/catalog";
 import { getHouse } from "@/objects/house";
 import { inviteRoommate } from "@/game/interactions";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toastContext";
 import { ROOMMATE_MIN_FRIENDSHIP, ROOMMATE_WEEKLY_GAIN } from "@/game/rules";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";
