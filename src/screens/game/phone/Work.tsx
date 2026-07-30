@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
 import BackButton from "./BackButton";
 import { workOvertime } from "@/game/interactions";
-import { useToast } from "@/components/ui/toastContext";
+import { useAnnounce } from "@/game/useAnnounce";
 import {
   ActionPointCost,
-  MAX_PROMOTIONS,
   OVERTIME_PAY,
   SHIFTS_PER_PROMOTION,
   weeklySalary,
@@ -15,6 +14,7 @@ import store from "@/state/store";
 /**
  * The salary arrives every week no matter what. Overtime trades an action point
  * for cash right now, and enough shifts earn a raise that pays out every week.
+ * The raise count is deliberately not shown -- just experience filling up.
  */
 function Work({
   setActiveScreen,
@@ -22,16 +22,15 @@ function Work({
   setActiveScreen: (screen: string) => void;
 }) {
   const dispatch = useAppDispatch();
-  const toast = useToast();
+  const announce = useAnnounce();
   const job = useAppSelector((state) => state.job);
-  const upgrades = useAppSelector((state) => state.upgrades);
   const actionPoints = useAppSelector((state) => state.actionPoints);
 
-  const atMax = job.promotions >= MAX_PROMOTIONS;
+  const progress = Math.min(1, job.shiftsWorked / SHIFTS_PER_PROMOTION);
 
   const doShift = () => {
     const result = workOvertime(dispatch, store.getState());
-    toast({
+    announce({
       title: result.ok ? `Overtime · +$${result.earned}` : "Work",
       tone: result.ok ? "default" : "error",
       message: result.message,
@@ -47,20 +46,27 @@ function Work({
 
       <dl className="statList">
         <dt>Weekly paycheck</dt>
-        <dd>${weeklySalary(job, upgrades)}</dd>
-        <dt>Promotions</dt>
-        <dd>
-          {job.promotions} / {MAX_PROMOTIONS}
-        </dd>
-        <dt>Shifts until a raise</dt>
-        <dd>
-          {atMax ? "—" : `${job.shiftsWorked} / ${SHIFTS_PER_PROMOTION}`}
-        </dd>
+        <dd>${weeklySalary(job)}</dd>
       </dl>
+
+      <div className="grid gap-1">
+        <span className="text-sm">Experience</span>
+        <div
+          className="xpBar"
+          role="meter"
+          aria-valuenow={Math.round(progress * 100)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Experience toward your next raise"
+        >
+          <div className="xpFill" style={{ width: `${progress * 100}%` }} />
+        </div>
+      </div>
 
       <p className="phoneHint">
         An overtime shift pays ${OVERTIME_PAY + job.promotions * 10} straight
-        away and costs {ActionPointCost.Overtime} AP.
+        away and costs {ActionPointCost.Overtime} AP. Enough experience earns a
+        bigger paycheck.
       </p>
 
       <Button onClick={doShift} disabled={actionPoints < ActionPointCost.Overtime}>

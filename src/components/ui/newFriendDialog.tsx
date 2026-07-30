@@ -27,7 +27,9 @@ function NewFriendDialog({
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-sm" showCloseButton={false}>
         <div className="grid justify-items-center gap-3 text-center">
-          <DialogTitle className="text-3xl">Yippie!</DialogTitle>
+          <DialogTitle className="text-2xl">
+            You befriended {friend.name}
+          </DialogTitle>
           <EntityImage
             src={friend.image}
             name={friend.name}
@@ -35,9 +37,6 @@ function NewFriendDialog({
             className="drop-shadow-lg"
           />
           <div className="grid gap-1">
-            <div className="text-xl font-semibold text-foreground">
-              {friend.name}
-            </div>
             <div>
               <Badge variant="outline">{friend.personality}</Badge>
             </div>
@@ -55,7 +54,7 @@ function NewFriendDialog({
           </p>
         </div>
         <DialogFooter>
-          <DialogClose render={<Button className="w-full">Nice</Button>} />
+          <DialogClose render={<Button className="w-full">Yippie!</Button>} />
         </DialogFooter>
       </DialogContent>
     </Dialog>

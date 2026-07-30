@@ -42,6 +42,7 @@ import {
     SOLO_VISIT_MEET_CHANCE,
     WEEKLY_DECAY,
     diminishingMultiplier,
+    friendshipTier,
     isGameOver,
     weeklyActionPoints,
     weeklySalary,
@@ -57,10 +58,14 @@ export interface FriendGain {
     friendId: string;
     name: string;
     gained: number;
-    /** The most this action could have paid out if played perfectly. */
-    max: number;
-    /** Plain-language breakdown of the modifiers that applied. */
-    reasons: string[];
+    /** Friendship after the change, for the total gauge. */
+    level: number;
+    /** Familiarity title at that level. */
+    tier: string;
+    /** How they took it: "Had a great time", "Loved it", and so on. */
+    reaction?: string;
+    /** What drove that reaction -- the place, the company, or seeing you too often. */
+    causes: string[];
 }
 
 export interface InteractionResult {
@@ -85,7 +90,6 @@ function failure(title: string, message: string): InteractionResult {
 function roll(): number {
     return 0.8 + Math.random() * 0.4;
 }
-const BEST_ROLL = 1.2;
 
 function record(state: RootState, id: string): FriendRecord | undefined {
     return state.friends.find(f => f.id === id);
@@ -104,18 +108,9 @@ function knownKeys(state: RootState, id: string): string[] {
 }
 
 /**
- * The best this action could have paid out, for the "gained out of max" bar.
- * Never reports less than what actually happened, in case a hand-authored
- * preference beats what the personality tables can produce.
- */
-function bestCase(idealAmount: number, gained: number): number {
-    return Math.max(Math.round(idealAmount * BEST_ROLL), gained);
-}
-
-/**
- * Player-facing reasons describe the effect, never the maths. The bar already
- * shows how well it went, and exposing the multipliers would just turn the game
- * into a spreadsheet.
+ * Player-facing text describes the effect, never the maths. Nothing here quotes
+ * a multiplier, a ceiling or a chance -- the friendship gauge and the reaction
+ * are what the player is meant to read.
  */
 function repeatReason(repeats: number): string {
     return repeats === 1
@@ -123,8 +118,38 @@ function repeatReason(repeats: number): string {
         : `Already saw them ${repeats} times this week`;
 }
 
-function opinionReason(opinion: string, thing: string): string {
-    return `${opinion}s ${thing}`;
+/** How they felt about a gift, straight from their opinion of it. */
+function itemReaction(opinion: string | null): string {
+    switch (opinion) {
+        case PreferenceEnum.Favorite:
+            return "Loved it";
+        case PreferenceEnum.Like:
+            return "Liked it";
+        case PreferenceEnum.Dislike:
+            return "Disliked it";
+        case PreferenceEnum.Hate:
+            return "Hated it";
+        default:
+            return "No strong feelings";
+    }
+}
+
+/**
+ * How the outing went overall, measured against what a neutral trip would have
+ * paid. The causes list says whether the venue or the company swung it.
+ */
+function outingReaction(amount: number, neutral: number): string {
+    const ratio = neutral > 0 ? amount / neutral : 1;
+    if (ratio >= 1.25) return "Had a great time";
+    if (ratio <= 0.85) return "Had a bad time";
+    return "Had a good time";
+}
+
+/** Builds the gauge fields shared by every payout. */
+function levelAfter(state: RootState, friendId: string, gained: number) {
+    const current = record(state, friendId)?.friendshipLevel ?? 0;
+    const level = Math.max(0, Math.min(current + gained, 100));
+    return { level, tier: friendshipTier(level) };
 }
 
 /**
@@ -196,11 +221,10 @@ export function chatWithFriend(
         Math.round(CHAT_BASE_GAIN * diminishingMultiplier(repeats) * roll()),
         headroom(state, friendId),
     );
-    const max = bestCase(CHAT_BASE_GAIN, gained);
 
-    const reasons: string[] = [];
-    if (repeats > 0) reasons.push(repeatReason(repeats));
-    if (headroom(state, friendId) < CHAT_BASE_GAIN) reasons.push("Close to maximum friendship");
+    const causes: string[] = [];
+    if (repeats > 0) causes.push(repeatReason(repeats));
+    if (headroom(state, friendId) < CHAT_BASE_GAIN) causes.push("Close to maximum friendship");
 
     dispatch(spendActionPoints(ActionPointCost.Chat));
     dispatch(addFriendship({ id: friendId, amount: gained }));
@@ -217,8 +241,10 @@ export function chatWithFriend(
     return {
         ok: true,
         title: `Messaged ${friend.name}`,
-        message: `Chatting is cheap but has strong diminishing returns within a week.`,
-        gains: [{ friendId, name: friend.name, gained, max, reasons }],
+        message: "",
+        gains: [
+            { friendId, name: friend.name, gained, ...levelAfter(state, friendId, gained), causes },
+        ],
         apSpent: ActionPointCost.Chat,
         moneySpent: 0,
         metFriend: maybeMeetSomeone(dispatch, state, friend),
@@ -299,14 +325,21 @@ export function startHangout(
     const learned: string[] = [];
 
     attendees.forEach((friend) => {
-        const reasons: string[] = [];
+        const causes: string[] = [];
         let amount = HANGOUT_BASE_GAIN;
 
+        // The venue's contribution, called out separately from the company so the
+        // player can tell which of the two swung the evening.
         const opinion = friend.preferenceFor(hangout);
         if (opinion) {
             amount *= PreferenceMultiplier[opinion];
-            reasons.push(opinionReason(opinion, hangout.name));
-            // Going somewhere they feel strongly about makes that opinion obvious.
+            const positive =
+                opinion === PreferenceEnum.Like || opinion === PreferenceEnum.Favorite;
+            causes.push(
+                positive
+                    ? `${hangout.name} is their kind of place`
+                    : `${hangout.name} is not their kind of place`,
+            );
             if (!knownKeys(state, friend.id).includes(hangout.key)) {
                 learned.push(`${friend.name} ${opinion.toLowerCase()}s ${hangout.name}.`);
             }
@@ -319,31 +352,37 @@ export function startHangout(
                 const feeling = friend.preferenceFor(other);
                 if (feeling === PreferenceEnum.Like || feeling === PreferenceEnum.Favorite) {
                     amount += GROUP_LIKE_BONUS;
-                    reasons.push(`Glad ${other.name} came along`);
+                    causes.push(`Glad ${other.name} came along`);
                     dispatch(revealPreference({ id: friend.id, key: other.key }));
                 } else if (feeling === PreferenceEnum.Dislike || feeling === PreferenceEnum.Hate) {
                     amount -= GROUP_DISLIKE_PENALTY;
-                    reasons.push(`Put off by ${other.name} coming along`);
+                    causes.push(`Put off by ${other.name} coming along`);
                     dispatch(revealPreference({ id: friend.id, key: other.key }));
                 }
             });
 
+        // Measured before the repeat penalty, so "had a bad time" is about the
+        // outing itself rather than about having been seen too often.
+        const reaction = outingReaction(amount, HANGOUT_BASE_GAIN);
+
         const repeats = timesSeenThisWeek(state, friend.id);
         if (repeats > 0) {
             amount *= diminishingMultiplier(repeats);
-            reasons.push(repeatReason(repeats));
+            causes.push(repeatReason(repeats));
         }
 
         const gained = Math.min(Math.round(amount * roll()), headroom(state, friend.id));
-        const max = bestCase(
-            HANGOUT_BASE_GAIN * PreferenceMultiplier[PreferenceEnum.Like] +
-                GROUP_LIKE_BONUS * (attendees.length - 1),
-            gained,
-        );
 
         dispatch(addFriendship({ id: friend.id, amount: gained }));
         dispatch(recordInteraction(friend.id));
-        gains.push({ friendId: friend.id, name: friend.name, gained, max, reasons });
+        gains.push({
+            friendId: friend.id,
+            name: friend.name,
+            gained,
+            ...levelAfter(state, friend.id, gained),
+            reaction,
+            causes,
+        });
     });
 
     dispatch(spendActionPoints(ActionPointCost.Hangout));
@@ -382,28 +421,23 @@ export function giveGift(
         return failure("Gift", `Not enough action points. Giving a gift costs ${ActionPointCost.Gift} AP.`);
     }
 
-    const reasons: string[] = [];
+    const causes: string[] = [];
     let amount = GIFT_BASE_GAIN;
     const opinion = friend.preferenceFor(gift);
     if (opinion) {
         amount *= PreferenceMultiplier[opinion];
-        reasons.push(opinionReason(opinion, gift.name));
         dispatch(revealPreference({ id: friend.id, key: gift.key }));
-    } else {
-        reasons.push("No strong feelings about it");
     }
+    const reaction = itemReaction(opinion);
 
     const repeats = timesSeenThisWeek(state, friendId);
     if (repeats > 0) {
         amount *= diminishingMultiplier(repeats);
-        reasons.push(repeatReason(repeats));
+        causes.push(repeatReason(repeats));
     }
 
     const raw = Math.round(amount * roll());
     const gained = raw >= 0 ? Math.min(raw, headroom(state, friendId)) : raw;
-    // Personality tables only ever produce Like for items, so a Favorite-based
-    // max would be a number the player could never actually hit.
-    const max = bestCase(GIFT_BASE_GAIN * PreferenceMultiplier[PreferenceEnum.Like], gained);
 
     dispatch(spendActionPoints(ActionPointCost.Gift));
     dispatch(giftItem(giftId));
@@ -413,8 +447,17 @@ export function giveGift(
     return {
         ok: true,
         title: `Gave ${gift.name} to ${friend.name}`,
-        message: gained < 0 ? "That was not their thing." : "Gifts pay out most when they match a personality.",
-        gains: [{ friendId, name: friend.name, gained, max, reasons }],
+        message: "",
+        gains: [
+            {
+                friendId,
+                name: friend.name,
+                gained,
+                ...levelAfter(state, friendId, gained),
+                reaction,
+                causes,
+            },
+        ],
         apSpent: ActionPointCost.Gift,
         moneySpent: 0,
         learned: [],
@@ -475,9 +518,6 @@ export function purchaseUpgrade(dispatch: AppDispatch, state: RootState, upgrade
     const upgrade = getUpgrade(upgradeId);
     if (!upgrade) return "That upgrade does not exist.";
     if (state.upgrades.includes(upgradeId)) return `You already own ${upgrade.name}.`;
-    if (upgrade.requires && !state.upgrades.includes(upgrade.requires)) {
-        return `Requires ${getUpgrade(upgrade.requires)?.name ?? upgrade.requires} first.`;
-    }
     if (state.money < upgrade.price) return `That costs $${upgrade.price} and you have $${state.money}.`;
     dispatch(addMoney(-upgrade.price));
     dispatch(buyUpgrade(upgradeId));
@@ -540,7 +580,7 @@ export function browseWormGround(dispatch: AppDispatch, state: RootState): Inter
         title: "WormGround",
         message:
             learned.length === 0 && !metFriend
-                ? "Nothing useful this time. Try again next week."
+                ? "Nothing useful this time."
                 : "",
         gains: [],
         apSpent: ActionPointCost.Browse,
@@ -566,7 +606,7 @@ export interface WeekReport {
  * you ignored drifts a little.
  */
 export function advanceWeek(dispatch: AppDispatch, state: RootState): WeekReport {
-    const salary = weeklySalary(state.job, state.upgrades);
+    const salary = weeklySalary(state.job);
     const actionPoints = weeklyActionPoints(state.upgrades);
     const roommateGains: string[] = [];
     const drifted: string[] = [];

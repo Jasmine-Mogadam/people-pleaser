@@ -78,9 +78,8 @@ export function weeklyActionPoints(upgradeIds: string[]): number {
     );
 }
 
-export function weeklySalary(job: JobState, upgradeIds: string[]): number {
-    const bonus = upgradeIds.reduce((total, id) => total + (getUpgrade(id)?.salaryBonus ?? 0), 0);
-    return BASE_SALARY + job.promotions * RAISE_PER_PROMOTION + bonus;
+export function weeklySalary(job: JobState): number {
+    return BASE_SALARY + job.promotions * RAISE_PER_PROMOTION;
 }
 
 export function weeksRemaining(currentWeek: number): number {

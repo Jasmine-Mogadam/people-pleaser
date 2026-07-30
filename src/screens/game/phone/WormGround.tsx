@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import BackButton from "./BackButton";
 import { browseWormGround } from "@/game/interactions";
 import { toastFromResult } from "@/game/resultToast";
-import { useToast } from "@/components/ui/toastContext";
+import { useAnnounce } from "@/game/useAnnounce";
 import { ActionPointCost } from "@/game/rules";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";
@@ -14,7 +14,7 @@ function WormGround({
   setActiveScreen: (screen: string) => void;
 }) {
   const dispatch = useAppDispatch();
-  const toast = useToast();
+  const announce = useAnnounce();
   const actionPoints = useAppSelector((state) => state.actionPoints);
 
   return (
@@ -29,7 +29,7 @@ function WormGround({
       </p>
       <Button
         onClick={() =>
-          toast(toastFromResult(browseWormGround(dispatch, store.getState())))
+          announce(toastFromResult(browseWormGround(dispatch, store.getState())))
         }
         disabled={actionPoints < ActionPointCost.Browse}
       >

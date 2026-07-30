@@ -13,10 +13,14 @@ function About({
       <div className="pageBody grid max-w-2xl gap-4">
         <div>Made by PinkFlamess for ArtFight</div>
         <div>
-          Life happened and I didn't really do as much as I hoped. This game was
-          made entirely by hand. If you want to see more of what I was going for,
-          you can see a more fleshed out version of the game here: (note, this alt
-          version had ai used to make the code)
+          This is the version of the game with the code made by ai. The art and
+          the characters are still all mine. The version made entirely by hand,
+          with no ai involved, is here:
+          <div className="linkList">
+            <a href="https://people-pleaser.netlify.app/">
+              people-pleaser.netlify.app <Link className="h-4 w-4" />
+            </a>
+          </div>
         </div>
         <div>
           Check out my other games!

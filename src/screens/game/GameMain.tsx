@@ -13,13 +13,17 @@ import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";
 import { saveGameState } from "@/state/gameState";
 import { advanceWeek } from "@/game/interactions";
-import { useToast } from "@/components/ui/toastContext";
+import { useAnnounce } from "@/game/useAnnounce";
 import {
-  CalendarDays,
-  CircleDollarSign,
-  Users,
-  Zap,
-} from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { CalendarDays, CircleDollarSign, Users, Zap } from "lucide-react";
 import { FRIEND_THRESHOLD, GAME_LENGTH_WEEKS, isGameOver } from "@/game/rules";
 import "./GameMain.css";
 
@@ -29,7 +33,7 @@ function GameMain({
   setActiveScreen: (screen: string) => void;
 }) {
   const dispatch = useAppDispatch();
-  const toast = useToast();
+  const announce = useAnnounce();
   const friends = useAppSelector((state) => state.friends);
   const money = useAppSelector((state) => state.money);
   const currentWeek = useAppSelector((state) => state.currentWeek);
@@ -39,7 +43,9 @@ function GameMain({
   const [selectedHangout, setSelectedHangout] = useState(
     undefined as HangoutType | undefined,
   );
+  const [pendingInvite, setPendingInvite] = useState<string | null>(null);
   const [newFriend, setNewFriend] = useState<Friend | null>(null);
+  const [confirmEndWeek, setConfirmEndWeek] = useState(false);
 
   const realFriends = friends.filter(
     (f) => f.friendshipLevel >= FRIEND_THRESHOLD,
@@ -61,9 +67,10 @@ function GameMain({
   }, [friends]);
 
   const endWeek = () => {
+    setConfirmEndWeek(false);
     const report = advanceWeek(dispatch, store.getState());
     if (isGameOver(report.week)) return;
-    toast({
+    announce({
       title: `Week ${report.week + 1}`,
       message: `Paycheck $${report.salary}. Action points back to ${report.actionPoints}.`,
       notes: [
@@ -77,6 +84,12 @@ function GameMain({
     });
   };
 
+  // Unspent action points are gone for good, so make the player say so out loud.
+  const requestEndWeek = () => {
+    if (actionPoints > 0) setConfirmEndWeek(true);
+    else endWeek();
+  };
+
   const renderScreen = () => {
     switch (activeScreen) {
       case ScreenEnum.House:
@@ -84,8 +97,13 @@ function GameMain({
       case ScreenEnum.Hangout:
         return (
           <Hangout
+            key={`${selectedHangout?.id ?? ""}-${pendingInvite ?? ""}`}
             selectedHangout={selectedHangout}
-            onDone={() => setActiveScreen(ScreenEnum.House)}
+            initialInvite={pendingInvite}
+            onDone={() => {
+              setPendingInvite(null);
+              setActiveScreen(ScreenEnum.House);
+            }}
           />
         );
     }
@@ -114,7 +132,7 @@ function GameMain({
           <Zap className="statIcon" />
           {actionPoints} AP
         </span>
-        <Button className="endWeek" onClick={endWeek}>
+        <Button className="endWeek" onClick={requestEndWeek}>
           End Week
         </Button>
       </header>
@@ -124,9 +142,29 @@ function GameMain({
       <Phone
         setActiveScreen={setActiveScreen}
         setSelectedHangout={setSelectedHangout}
+        onInvite={setPendingInvite}
       />
 
       <NewFriendDialog friend={newFriend} onClose={() => setNewFriend(null)} />
+
+      <Dialog open={confirmEndWeek} onOpenChange={setConfirmEndWeek}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>End the week early?</DialogTitle>
+            <DialogDescription>
+              You still have {actionPoints} action point
+              {actionPoints === 1 ? "" : "s"} left. They do not carry over to
+              next week.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose
+              render={<Button variant="outline">Keep playing</Button>}
+            />
+            <Button onClick={endWeek}>End week anyway</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

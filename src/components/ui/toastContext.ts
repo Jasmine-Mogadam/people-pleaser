@@ -10,6 +10,8 @@ export interface ToastLine {
     value?: string;
     /** 0-1, drawn as a small bar under the line. */
     fill?: number;
+    /** Sits under the bar, e.g. the familiarity title. */
+    meta?: string;
     sub?: string[];
 }
 

@@ -3,9 +3,9 @@ import EntityImage from "@/components/ui/entityImage";
 import BackButton from "./BackButton";
 import { AllGifts } from "@/objects/catalog";
 import { AllHouses, getHouse } from "@/objects/house";
-import { AllUpgrades, getUpgrade } from "@/objects/upgrade";
+import { AllUpgrades } from "@/objects/upgrade";
 import { buyGift, moveHouse, purchaseUpgrade } from "@/game/interactions";
-import { useToast } from "@/components/ui/toastContext";
+import { useAnnounce } from "@/game/useAnnounce";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";
@@ -18,7 +18,7 @@ function Shop({
   setActiveScreen: (screen: string) => void;
 }) {
   const dispatch = useAppDispatch();
-  const toast = useToast();
+  const announce = useAnnounce();
   const money = useAppSelector((state) => state.money);
   const inventory = useAppSelector((state) => state.inventory);
   const upgrades = useAppSelector((state) => state.upgrades);
@@ -32,7 +32,7 @@ function Shop({
   const buy = (title: string, run: () => string) => {
     const before = store.getState().money;
     const message = run();
-    toast({
+    announce({
       title,
       message,
       tone: store.getState().money === before ? "error" : "default",
@@ -41,29 +41,31 @@ function Shop({
 
   return (
     <div className="screen">
-      <div className="screenHeader">
-        <BackButton setActiveScreen={setActiveScreen} />
-        <span>Shop</span>
-        <span className="headerMoney">${Math.round(money)}</span>
-      </div>
-
-      <div className="tabRow">
-        {Object.values(Tab).map((name) => (
-          <Button
-            key={name}
-            size="sm"
-            variant={tab === name ? "default" : "outline"}
-            onClick={() => setTab(name)}
-          >
-            {name}
-          </Button>
-        ))}
+      {/* Header and tabs stay put while the list scrolls under them. */}
+      <div className="stickyTop">
+        <div className="screenHeader">
+          <BackButton setActiveScreen={setActiveScreen} />
+          <span>Shop</span>
+          <span className="headerMoney">${Math.round(money)}</span>
+        </div>
+        <div className="tabRow">
+          {Object.values(Tab).map((name) => (
+            <Button
+              key={name}
+              size="sm"
+              variant={tab === name ? "default" : "outline"}
+              onClick={() => setTab(name)}
+            >
+              {name}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {tab === Tab.Gifts && (
         <div className="grid gap-1.5">
           <p className="phoneHint">
-            Gifts sit in your bag until you hand one over from Chat.
+            Gifts sit in your bag until you hand one over from Contacts.
           </p>
           {AllGifts.map((gift) => (
             <div key={gift.id} className="shopRow">
@@ -102,22 +104,22 @@ function Shop({
           </p>
           {AllUpgrades.map((upgrade) => {
             const bought = upgrades.includes(upgrade.id);
-            const blocked =
-              upgrade.requires !== undefined && !upgrades.includes(upgrade.requires);
             return (
-              <div key={upgrade.id} className="shopRow">
-                <span className="rowText">
-                  <span className="rowTitle">{upgrade.name}</span>
-                  <span className="rowMeta">
-                    ${upgrade.price}
-                    {blocked &&
-                      ` · needs ${getUpgrade(upgrade.requires!)?.name ?? upgrade.requires}`}
-                  </span>
+              <div key={upgrade.id} className="upgradeRow">
+                <span className="upgradeIcon">
+                  <upgrade.icon />
+                </span>
+                <span className="rowTitle">{upgrade.name}</span>
+                <span className="upgradePrice">${upgrade.price}</span>
+                <span className="upgradeText">
+                  <span className="rowFlavour">{upgrade.description}</span>
+                  <span className="rowMeta">Effect: {upgrade.effect}</span>
                 </span>
                 <Button
+                  className="upgradeBuy"
                   size="sm"
                   variant="outline"
-                  disabled={bought || blocked || money < upgrade.price}
+                  disabled={bought || money < upgrade.price}
                   onClick={() =>
                     buy(upgrade.name, () =>
                       purchaseUpgrade(dispatch, store.getState(), upgrade.id),

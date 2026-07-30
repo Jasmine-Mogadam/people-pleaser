@@ -3,12 +3,10 @@ import { Button } from "@/components/ui/button";
 import {
   Briefcase,
   ChevronDown,
-  GripHorizontal,
+  History as HistoryIcon,
   MapPin,
-  MessageCircle,
   Settings as SettingsIcon,
   ShoppingBag,
-  Smartphone,
   User2,
   Worm,
 } from "lucide-react";
@@ -16,33 +14,37 @@ import { useState } from "react";
 import { ScreenEnum } from "./screenEnum";
 import { PhoneScreenEnum } from "./phone/PhoneScreenEnum";
 import Contacts from "./phone/Contacts";
-import Chat from "./phone/Chat";
 import Shop from "./phone/Shop";
 import Work from "./phone/Work";
 import WormGround from "./phone/WormGround";
 import Settings from "./phone/Settings";
+import History from "./phone/History";
 import BackButton from "./phone/BackButton";
 import EntityImage from "@/components/ui/entityImage";
 import { getHangout } from "@/objects/catalog";
+import type { Friend } from "@/objects/friend";
 import type { Hangout } from "@/objects/hangout";
 import { useAppSelector } from "@/state/hooks";
 
 const apps = [
   { screen: PhoneScreenEnum.Contacts, label: "Contacts", icon: User2 },
-  { screen: PhoneScreenEnum.Chat, label: "Chat", icon: MessageCircle },
   { screen: PhoneScreenEnum.Maps, label: "Maps", icon: MapPin },
   { screen: PhoneScreenEnum.WormGround, label: "WormGround", icon: Worm },
   { screen: PhoneScreenEnum.Shop, label: "Shop", icon: ShoppingBag },
   { screen: PhoneScreenEnum.Work, label: "Work", icon: Briefcase },
+  { screen: PhoneScreenEnum.History, label: "History", icon: HistoryIcon },
   { screen: PhoneScreenEnum.Settings, label: "Settings", icon: SettingsIcon },
 ];
 
 function Phone({
   setActiveScreen,
   setSelectedHangout,
+  onInvite,
 }: {
   setActiveScreen: (screen: string) => void;
   setSelectedHangout: (hangout: Hangout) => void;
+  /** Carries somebody from Contacts through to the hangout they get invited to. */
+  onInvite: (friendId: string | null) => void;
 }) {
   // Starts closed so the scene is unobstructed until the player reaches for it.
   const [open, setOpen] = useState(false);
@@ -53,6 +55,12 @@ function Phone({
   const actionPoints = useAppSelector((state) => state.actionPoints);
 
   const goHome = () => setActivePhoneScreen(PhoneScreenEnum.Main);
+
+  // Picking somebody in Contacts sends you to Maps to choose where to take them.
+  const planHangout = (friend: Friend) => {
+    onInvite(friend.id);
+    setActivePhoneScreen(PhoneScreenEnum.Maps);
+  };
 
   const renderScreen = () => {
     switch (activePhoneScreen) {
@@ -74,15 +82,20 @@ function Phone({
           </div>
         );
       case PhoneScreenEnum.Contacts:
-        return <Contacts setActiveScreen={setActivePhoneScreen} />;
-      case PhoneScreenEnum.Chat:
-        return <Chat setActiveScreen={setActivePhoneScreen} />;
+        return (
+          <Contacts
+            setActiveScreen={setActivePhoneScreen}
+            onPlanHangout={planHangout}
+          />
+        );
       case PhoneScreenEnum.Shop:
         return <Shop setActiveScreen={setActivePhoneScreen} />;
       case PhoneScreenEnum.Work:
         return <Work setActiveScreen={setActivePhoneScreen} />;
       case PhoneScreenEnum.WormGround:
         return <WormGround setActiveScreen={setActivePhoneScreen} />;
+      case PhoneScreenEnum.History:
+        return <History setActiveScreen={setActivePhoneScreen} />;
       case PhoneScreenEnum.Settings:
         return <Settings setActiveScreen={setActivePhoneScreen} />;
       case PhoneScreenEnum.Maps:
@@ -113,6 +126,7 @@ function Phone({
                         setSelectedHangout(hangout);
                         setActiveScreen(ScreenEnum.Hangout);
                         setOpen(false);
+                        goHome();
                       }}
                     >
                       <EntityImage
@@ -153,19 +167,17 @@ function Phone({
         aria-expanded={open}
         aria-controls="phone-body"
       >
-        <GripHorizontal className="handleGrip" />
-        <span className="handleLabel">
-          <Smartphone className="h-4 w-4" />
-          Phone
-        </span>
+        <span className="phoneSpeaker" aria-hidden="true" />
+        <span className="handleLabel">Phone</span>
         <span className="handleMeta">
           {actionPoints} AP
           <ChevronDown className="handleChevron h-4 w-4" />
         </span>
       </button>
 
-      <div className="phone" id="phone-body" aria-hidden={!open}>
-        {renderScreen()}
+      <div className="phoneBody" id="phone-body" aria-hidden={!open}>
+        <div className="phoneScreen">{renderScreen()}</div>
+        <span className="homeBar" aria-hidden="true" />
       </div>
     </div>
   );

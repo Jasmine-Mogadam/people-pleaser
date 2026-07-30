@@ -244,6 +244,34 @@ export const settingsSlice = createSlice({
 });
 export const { toggleSetting, setSettings } = settingsSlice.actions;
 
+/** One thing that happened, as shown in the phone's History app. */
+export interface HistoryEntry {
+    id: number;
+    week: number;
+    title: string;
+    lines: string[];
+}
+
+/** Old weeks are worth keeping, but not without limit. */
+const HISTORY_LIMIT = 400;
+
+export const historySlice = createSlice({
+    name: "history",
+    initialState: [] as HistoryEntry[],
+    reducers: {
+        addHistory: (state, action: PayloadAction<Omit<HistoryEntry, "id">>) => {
+            const id = state.length > 0 ? state[state.length - 1].id + 1 : 0;
+            state.push({ ...action.payload, id });
+            if (state.length > HISTORY_LIMIT) state.splice(0, state.length - HISTORY_LIMIT);
+            return state;
+        },
+        setHistory: (_state, action: PayloadAction<HistoryEntry[]>) => {
+            return action.payload;
+        },
+    },
+});
+export const { addHistory, setHistory } = historySlice.actions;
+
 /**
  * How many times you have already interacted with each friend this week. Drives
  * diminishing returns, so spamming one person is never the best strategy.

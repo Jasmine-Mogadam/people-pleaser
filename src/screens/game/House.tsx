@@ -3,7 +3,7 @@ import EntityImage from "@/components/ui/entityImage";
 import { getFriend } from "@/objects/catalog";
 import { getHouse } from "@/objects/house";
 import { inviteRoommate } from "@/game/interactions";
-import { useToast } from "@/components/ui/toastContext";
+import { useAnnounce } from "@/game/useAnnounce";
 import { ROOMMATE_MIN_FRIENDSHIP, ROOMMATE_WEEKLY_GAIN } from "@/game/rules";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";
@@ -11,7 +11,7 @@ import "./House.css";
 
 function House() {
   const dispatch = useAppDispatch();
-  const toast = useToast();
+  const announce = useAnnounce();
   const houseState = useAppSelector((state) => state.house);
   const friends = useAppSelector((state) => state.friends);
 
@@ -27,7 +27,7 @@ function House() {
   const ask = (id: string) => {
     const before = store.getState().house.roommateIds.length;
     const message = inviteRoommate(dispatch, store.getState(), id);
-    toast({
+    announce({
       title: house.name,
       message,
       tone:

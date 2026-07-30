@@ -84,7 +84,7 @@ function ToastCard({
               aria-valuenow={Math.round((line.fill ?? 0) * 100)}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={`Friendship gained with ${line.label}`}
+              aria-label={`Total friendship with ${line.label}`}
             >
               <div
                 className="toastBarFill"
@@ -94,6 +94,7 @@ function ToastCard({
               />
             </div>
           )}
+          {line.meta && <div className="toastMeta">{line.meta}</div>}
           {line.sub?.map((s) => (
             <div key={s} className="toastSub">
               {s}

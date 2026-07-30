@@ -6,7 +6,7 @@ import type { Friend } from "@/objects/friend";
 import type { Hangout } from "@/objects/hangout";
 import { startHangout, visitAlone } from "@/game/interactions";
 import { toastFromResult } from "@/game/resultToast";
-import { useToast } from "@/components/ui/toastContext";
+import { useAnnounce } from "@/game/useAnnounce";
 import { ActionPointCost } from "@/game/rules";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
@@ -15,17 +15,24 @@ import "./Hangout.css";
 
 function HangoutDisplay({
   selectedHangout,
+  initialInvite,
   onDone,
 }: {
   selectedHangout: Hangout | undefined;
+  /** Somebody picked in Contacts, already waiting here. */
+  initialInvite?: string | null;
   onDone: () => void;
 }) {
   const dispatch = useAppDispatch();
-  const toast = useToast();
+  const announce = useAnnounce();
   const friendRecords = useAppSelector((state) => state.friends);
   const money = useAppSelector((state) => state.money);
   const actionPoints = useAppSelector((state) => state.actionPoints);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // Seeded at mount rather than in an effect. GameMain keys this component on
+  // the venue and the invite, so choosing either one remounts with a fresh list.
+  const [selectedIds, setSelectedIds] = useState<string[]>(() =>
+    initialInvite ? [initialInvite] : [],
+  );
 
   if (!selectedHangout) return null;
 
@@ -54,7 +61,7 @@ function HangoutDisplay({
       selectedHangout.id,
       selectedIds,
     );
-    toast(toastFromResult(outcome));
+    announce(toastFromResult(outcome));
     if (outcome.ok) setSelectedIds([]);
   };
 
@@ -107,7 +114,7 @@ function HangoutDisplay({
         <Button
           variant="outline"
           onClick={() =>
-            toast(
+            announce(
               toastFromResult(
                 visitAlone(dispatch, store.getState(), selectedHangout.id),
               ),

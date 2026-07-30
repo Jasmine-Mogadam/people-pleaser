@@ -5,6 +5,7 @@ import {
     setCurrentWeek,
     setDiscoveredHangouts,
     setFriends,
+    setHistory,
     setHouseState,
     setInventory,
     setJob,
@@ -13,6 +14,7 @@ import {
     setUpgrades,
     setWeeklyInteractions,
     type FriendRecord,
+    type HistoryEntry,
     type HouseState,
     type JobState,
     type SettingsState,
@@ -33,6 +35,7 @@ export interface State {
     upgrades: string[];
     settings: SettingsState;
     weeklyInteractions: Record<string, number>;
+    history: HistoryEntry[];
 }
 
 /**
@@ -56,6 +59,8 @@ export function loadGameState(): boolean {
         store.dispatch(setUpgrades(state.upgrades ?? []));
         store.dispatch(setSettings(state.settings ?? {}));
         store.dispatch(setWeeklyInteractions(state.weeklyInteractions ?? {}));
+        // Carried across saves on purpose: the History app is a log of the run.
+        store.dispatch(setHistory(state.history ?? []));
         return true;
     } catch (error) {
         console.error(`Error loading state":`, error);
@@ -84,6 +89,7 @@ export function newGameState(): void {
     store.dispatch(setJob({ promotions: 0, shiftsWorked: 0 }));
     store.dispatch(setUpgrades([]));
     store.dispatch(setWeeklyInteractions({}));
+    store.dispatch(setHistory([]));
     // Accessibility settings deliberately survive starting over.
     saveGameState();
 }

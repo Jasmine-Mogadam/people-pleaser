@@ -244,6 +244,22 @@
   gap: 6px;
 }
 
+/* Work progress. Deliberately unlabelled beyond "experience" -- the number of
+   raises earned is not something the player needs to be counting. */
+.xpBar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--muted);
+  overflow: hidden;
+}
+
+.xpFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
 .toggleRow {
   display: flex;
   align-items: center;
@@ -399,6 +415,12 @@
 .toastSub {
   font-size: 11px;
   color: var(--muted-foreground);
+}
+
+.toastMeta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
 }
 
 /* Accessibility settings. App.tsx puts these classes on <html>. */
