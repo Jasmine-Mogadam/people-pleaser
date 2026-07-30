@@ -27,7 +27,6 @@ import {
 import type { AppDispatch, RootState } from "../state/store";
 import {
     ActionPointCost,
-    SOLO_VISIT_MEET_CHANCE,
     CHAT_BASE_GAIN,
     GIFT_BASE_GAIN,
     GROUP_DISLIKE_PENALTY,
@@ -40,6 +39,7 @@ import {
     ROOMMATE_MIN_FRIENDSHIP,
     ROOMMATE_WEEKLY_GAIN,
     SHIFTS_PER_PROMOTION,
+    SOLO_VISIT_MEET_CHANCE,
     WEEKLY_DECAY,
     diminishingMultiplier,
     isGameOver,
