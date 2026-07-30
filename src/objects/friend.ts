@@ -115,7 +115,7 @@ export { type Friend };
 // TODO: make it impossible to be your own friend
 export const AllFriends = [new Friend(
     "Benny",
-    "judylll",
+    "royalc4tnip",
     PersonalityEnum.Relaxed,
 ), new Friend(
     "Apple",
