@@ -15,6 +15,9 @@ function About({
         made entirely by hand. If you want to see more of what I was going for,
         you can see a more fleshed out version of the game here: (note, this alt
         version had ai used to make the code)
+        <a href="https://people-pleaserr.netlify.app/">
+          People Pleaser (AI assisted) <Link />
+        </a>
       </div>
       <div>
         Check out my other games!
