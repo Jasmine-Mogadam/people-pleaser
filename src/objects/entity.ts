@@ -52,8 +52,8 @@ export function getEntityByKey(key: string): GameEntity | undefined {
     return getEntity(kind, id);
 }
 
-// TODO(done): friends, gifts and hangouts now share this base class, so the
-// "who likes this" and "roll a new friend" logic only exists in one place.
+// Friends, gifts and hangouts all extend this, so the "who likes this" and
+// "roll a new friend" logic only exists in one place.
 abstract class GameEntity {
     abstract readonly kind: EntityKind;
     name: string;

@@ -27,6 +27,7 @@ import {
 import type { AppDispatch, RootState } from "../state/store";
 import {
     ActionPointCost,
+    SOLO_VISIT_MEET_CHANCE,
     CHAT_BASE_GAIN,
     GIFT_BASE_GAIN,
     GROUP_DISLIKE_PENALTY,
@@ -216,6 +217,46 @@ export function chatWithFriend(
 
 // ---------------------------------------------------------------- hangout
 
+/**
+ * Going somewhere on your own. Earns no friendship, but it is how you meet
+ * people when your contacts list is empty and WormGround is not cooperating.
+ */
+export function visitAlone(
+    dispatch: AppDispatch,
+    state: RootState,
+    hangoutId: string,
+): InteractionResult {
+    const hangout = getHangout(hangoutId);
+    if (!hangout) return failure("Hangout", `No hangout with the id "${hangoutId}".`);
+    if (state.actionPoints < ActionPointCost.SoloVisit) {
+        return failure(hangout.name, `Not enough action points. Going alone costs ${ActionPointCost.SoloVisit} AP.`);
+    }
+    if (hangout.costPerPerson > state.money) {
+        return failure(hangout.name, `That costs $${hangout.costPerPerson} and you have $${state.money}.`);
+    }
+
+    dispatch(spendActionPoints(ActionPointCost.SoloVisit));
+    if (hangout.costPerPerson > 0) dispatch(addMoney(-hangout.costPerPerson));
+
+    const metFriend =
+        Math.random() < SOLO_VISIT_MEET_CHANCE
+            ? maybeMeetSomeone(dispatch, state, hangout)
+            : undefined;
+
+    return {
+        ok: true,
+        title: `${hangout.name}, on your own`,
+        message: metFriend
+            ? ""
+            : "Nobody worth talking to today. Going alone only ever finds people, it never builds friendship.",
+        gains: [],
+        apSpent: ActionPointCost.SoloVisit,
+        moneySpent: hangout.costPerPerson,
+        metFriend,
+        learned: [],
+    };
+}
+
 export function startHangout(
     dispatch: AppDispatch,
     state: RootState,
@@ -225,7 +266,7 @@ export function startHangout(
     const hangout = getHangout(hangoutId);
     if (!hangout) return failure("Hangout", `No hangout with the id "${hangoutId}".`);
     if (friendIds.length === 0) {
-        return failure(hangout.name, "Pick at least one person to invite.");
+        return failure(hangout.name, "Pick at least one person to invite, or go alone instead.");
     }
     if (friendIds.length > hangout.capacity) {
         return failure(

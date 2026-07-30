@@ -38,6 +38,10 @@ function GameMain({
   );
   const [weekReport, setWeekReport] = useState<WeekReport | null>(null);
 
+  const realFriends = friends.filter(
+    (f) => f.friendshipLevel >= FRIEND_THRESHOLD,
+  ).length;
+
   // Autosave. Subscribing to the store catches every change, including the ones
   // that happen inside interaction handlers rather than during a render.
   useEffect(() => store.subscribe(saveGameState), []);
@@ -72,8 +76,7 @@ function GameMain({
         </div>
         <div className="money">${Math.round(money)}</div>
         <div className="friends">
-          {friends.filter((f) => f.friendshipLevel >= FRIEND_THRESHOLD).length}{" "}
-          Friends
+          {realFriends} {realFriends === 1 ? "Friend" : "Friends"}
         </div>
         <div className="actions">{actionPoints} AP</div>
         <Button onClick={endWeek}>

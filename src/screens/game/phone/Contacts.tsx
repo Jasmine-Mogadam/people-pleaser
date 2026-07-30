@@ -23,7 +23,7 @@ function Contacts({
       </div>
       {met.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Nobody yet. Try WormGround, or go somewhere and see who turns up.
+          Nobody yet. Scroll WormGround, or pick a place on Maps and go alone.
         </p>
       ) : (
         <FriendSearch friends={met} />

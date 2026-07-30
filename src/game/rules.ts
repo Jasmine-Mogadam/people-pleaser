@@ -17,10 +17,15 @@ export const STARTING_HANGOUTS = ["fast_food_joint", "movie_theater"];
 export const ActionPointCost = {
     Chat: 1,
     Hangout: 2,
+    /** Going somewhere on your own, purely to run into people. */
+    SoloVisit: 1,
     Gift: 1,
     Overtime: 1,
     Browse: 1,
 };
+
+/** Going alone is worse than WormGround for meeting people, but it always tries. */
+export const SOLO_VISIT_MEET_CHANCE = 0.45;
 
 // Work
 export const BASE_SALARY = 120;

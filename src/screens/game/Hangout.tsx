@@ -5,7 +5,11 @@ import ResultDialog from "@/components/ui/resultDialog";
 import { getFriend } from "@/objects/catalog";
 import type { Friend } from "@/objects/friend";
 import type { Hangout } from "@/objects/hangout";
-import { startHangout, type InteractionResult } from "@/game/interactions";
+import {
+  startHangout,
+  visitAlone,
+  type InteractionResult,
+} from "@/game/interactions";
 import { ActionPointCost } from "@/game/rules";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
@@ -98,7 +102,8 @@ function HangoutDisplay({
 
       {met.length === 0 ? (
         <p className="p-3 text-sm text-muted-foreground">
-          You have not met anybody to invite yet. Try WormGround on your phone.
+          Nobody to invite yet. Go alone and see who turns up, or try WormGround
+          on your phone.
         </p>
       ) : (
         <FriendSearch
@@ -122,6 +127,22 @@ function HangoutDisplay({
           Hangout{" "}
           <i>
             Cost: {ActionPointCost.Hangout} AP, ${cost}
+          </i>
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() =>
+            setResult(visitAlone(dispatch, store.getState(), selectedHangout.id))
+          }
+          disabled={
+            actionPoints < ActionPointCost.SoloVisit ||
+            selectedHangout.costPerPerson > money
+          }
+        >
+          Go alone{" "}
+          <i>
+            Cost: {ActionPointCost.SoloVisit} AP, $
+            {selectedHangout.costPerPerson}
           </i>
         </Button>
         <Button variant="outline" onClick={onDone}>
