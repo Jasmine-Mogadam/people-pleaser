@@ -1,53 +1,24 @@
-import { type Personality, PersonalityEnum } from "./personality";
-import { addFriendPreference, getPreferencesForPersonality, PreferenceEnum, type Preference } from "./preference";
-import store from "../state/store";
-import { discoverFriend, updateFriend } from "../state/gameStateSlice";
+import { EntityKindEnum, GameEntity, type EntityKind } from "./entity";
+import type { Personality } from "./personality";
+import { PreferenceEnum, type Preference, type PreferenceType } from "./preference";
 
-const { friends } = store.getState();
-
-let id = -1;
-class Friend {
-    id: number;
-    name: string;
+/**
+ * A character. This is catalog data only -- how they feel about *you* lives in
+ * redux as a FriendRecord, because these instances cannot be saved to storage:
+ * their preferences point at each other in a loop, which JSON.stringify hates.
+ */
+class Friend extends GameEntity {
+    readonly kind: EntityKind = EntityKindEnum.Friend;
     owner: string;
     ownerUrl: string;
-    image: string;
     personality: Personality;
     preferences: Preference[] = [];
-    discoveredPreferences: Preference[] = [];
-    friendshipLevel: number;
-    constructor(
-        name: string,
-        owner: string,
-        personality: Personality,
-    ) {
-        this.id = id++; // my favorite silly trick
-        this.name = name;
+
+    constructor(name: string, owner: string, personality: Personality, description = "") {
+        super(name, description);
         this.owner = owner;
         this.ownerUrl = `https://artfight.net/~${owner}`;
-        this.image = new URL(`../assets/friend/${name.toLowerCase()}.png`, import.meta.url).href;
         this.personality = personality;
-        this.friendshipLevel = 0;
-    }
-
-    /**
-     *  Prevents friendship from going over 100 and under 0
-     * @param levelsToAdd levels to add to the current friendship level (negative numbers subtract)
-     */
-    updateFriendshipLevel(levelsToAdd: number) {
-        this.friendshipLevel = Math.max(0, Math.min(this.friendshipLevel + levelsToAdd, 100));
-        this.updateState();
-    }
-
-    updateState() {
-        const friendIndex = friends.findIndex(friend => friend.id === this.id);
-        if (friendIndex === -1) {
-            // Friend not found, add to the list
-            discoverFriend(this);
-        } else {
-            // Friend found, update the existing entry
-            updateFriend(this);
-        }
     }
 
     getLikes(): Preference[] {
@@ -56,103 +27,44 @@ class Friend {
         );
     }
 
-    // TODO: fix this so a hangout/gift with the same name as a friend does not get selected here D:
-    getFriends(): Friend[] {
-        return this.getLikes().filter(
-            p => AllFriends.includes(p.value as Friend)
-        ).map(p => p.value) as Friend[]
-    }
-
-    // TODO: make it based off favorites
-    getBestFriends(): Friend[] {
-        return this.getFriends().filter(f => f.owner === this.owner) // same owner
-    }
-
     getDislikes(): Preference[] {
         return this.preferences.filter(
             (p) => p.preference === PreferenceEnum.Dislike || p.preference === PreferenceEnum.Hate,
         );
     }
 
-    // random chance to be introduced to new friend
-    introduceFriend(): Friend | null {
-        // characters in allfriends but not in friends (people you have not met yet)
-        const strangers = AllFriends.filter(f => !friends.includes(f));
-        if (strangers.length === 0) return null // no more people to discover.
+    getFavorites(): Preference[] {
+        return this.preferences.filter((p) => p.preference === PreferenceEnum.Favorite);
+    }
 
-        const luck = Math.random() * 100
-        let possibleFriends = null
+    /** How they feel about one specific thing, or null if they have no opinion on it. */
+    preferenceFor(target: GameEntity): PreferenceType | null {
+        return this.preferences.find((p) => p.target.key === target.key)?.preference ?? null;
+    }
 
-        // rarest chance goes into effect
-        // 25% introduce to best friend
-        if (luck > 75) {
-            possibleFriends = this.getBestFriends().filter(
-                f => strangers.includes(f)
-            )
-        }
-        // 10% introduce to liked friend
-        if (luck > 90) {
-            possibleFriends = this.getFriends().filter(
-                f => strangers.includes(f)
-            )
-        }
-        // 5% introduce to random
-        if (luck > 95) {
-            possibleFriends = strangers
-        }
+    /**
+     * Only people. Filtering on kind rather than name means a hangout or gift that
+     * happens to share a name with a character can never sneak in here.
+     */
+    getFriends(): Friend[] {
+        return this.getLikes()
+            .filter((p) => p.target.kind === EntityKindEnum.Friend)
+            .map((p) => p.target as Friend);
+    }
 
-        if (possibleFriends && possibleFriends.length > 0) {
-            const newFriend = possibleFriends[Math.random() * possibleFriends.length];
-            discoverFriend(newFriend);
-            return newFriend // friend rolled!!
-        }
+    /** The people they actively favorite, not just the ones they tolerate. */
+    getBestFriends(): Friend[] {
+        return this.getFavorites()
+            .filter((p) => p.target.kind === EntityKindEnum.Friend)
+            .map((p) => p.target as Friend);
+    }
 
-        return null; // no friend rolled
+    /** Friends introduce their favorite people first, then anyone else they like. */
+    protected override pickIntroductionPool(strangers: Friend[]): Friend[] {
+        const best = this.getBestFriends().filter((f) => strangers.includes(f));
+        if (best.length > 0) return best;
+        return this.getFriends().filter((f) => strangers.includes(f));
     }
 }
-export { type Friend };
 
-// TODO: make it impossible to be your own friend
-export const AllFriends = [new Friend(
-    "Benny",
-    "royalc4tnip",
-    PersonalityEnum.Relaxed,
-), new Friend(
-    "Apple",
-    "NatieN",
-    PersonalityEnum.Silly,
-), new Friend(
-    "Lucille",
-    "NatieN",
-    PersonalityEnum.Refined,
-), new Friend(
-    "Cherie",
-    "NatieN",
-    PersonalityEnum.Relaxed,
-), new Friend(
-    "Yvonne",
-    "NatieN",
-    PersonalityEnum.Intense,
-), new Friend(
-    "Devin",
-    "HybridStarscapes",
-    PersonalityEnum.Shy,
-), new Friend(
-    "Andrew",
-    "HybridStarscapes",
-    PersonalityEnum.Relaxed,
-), new Friend(
-    "Reina",
-    "HybridStarscapes",
-    PersonalityEnum.Intense,
-), new Friend(
-    "Zac",
-    "HybridStarscapes",
-    PersonalityEnum.Relaxed,
-)]
-
-AllFriends.forEach(f => f.preferences = getPreferencesForPersonality(f.personality))
-
-// HybridStarscapes relationships
-addFriendPreference("Devin", "Andrew")
-addFriendPreference("Reina", "Andrew")
+export { Friend };

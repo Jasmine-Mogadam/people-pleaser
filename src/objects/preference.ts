@@ -1,7 +1,6 @@
-import { AllHangouts, type Hangout } from "./hangout";
+import { EntityKindEnum, getEntities, type GameEntity } from "./entity";
 import { type Personality, PersonalityEnum } from "./personality";
-import { AllGifts, type Gift } from "./gift";
-import { AllFriends, type Friend } from "./friend";
+import type { Friend } from "./friend";
 
 export const PreferenceEnum = {
     Favorite: "Favorite",
@@ -11,28 +10,52 @@ export const PreferenceEnum = {
 }
 export type PreferenceType = typeof PreferenceEnum[keyof typeof PreferenceEnum];
 
+/** How strongly a preference pushes an interaction's payout around. */
+export const PreferenceMultiplier: Record<PreferenceType, number> = {
+    [PreferenceEnum.Favorite]: 2,
+    [PreferenceEnum.Like]: 1.5,
+    [PreferenceEnum.Dislike]: 0.4,
+    [PreferenceEnum.Hate]: -0.5,
+};
+
 class Preference {
-    value: Hangout | Gift | Friend;
+    target: GameEntity;
     preference: PreferenceType;
-    constructor(value: Hangout | Gift | Friend, preference: PreferenceType) {
-        this.value = value;
+    constructor(target: GameEntity, preference: PreferenceType) {
+        this.target = target;
         this.preference = preference;
     }
 }
-export { type Preference };
+export { Preference };
 
-// TODO: make this get pref for friend so it doesn't auto-include themselves D:
-export function getPreferencesForPersonality(personality: Personality): Preference[] {
-    function getFriendPersonaPref(personality: Personality, preference: PreferenceType): Preference[] {
-        return AllFriends.filter(friend => friend.personality === personality)
-            .map(friend => new Preference(friend, preference));
+function hasPersonality(entity: GameEntity, personality: Personality): boolean {
+    const preferences = (entity as { personalityPreferences?: Personality[] }).personalityPreferences;
+    return preferences ? preferences.includes(personality) : false;
+}
+
+/**
+ * Builds the default preference table for a friend from their personality.
+ * Takes the friend rather than a bare personality so they are always filtered out
+ * of their own list -- nobody gets to be their own friend.
+ */
+export function getPreferencesForPersonality(friend: Friend): Preference[] {
+    const personality = friend.personality;
+
+    function getFriendPersonaPref(target: Personality, preference: PreferenceType): Preference[] {
+        return (getEntities(EntityKindEnum.Friend) as Friend[])
+            .filter(other => other.id !== friend.id && other.personality === target)
+            .map(other => new Preference(other, preference));
     }
+    function getThingPref(kind: string): Preference[] {
+        return getEntities(kind)
+            .filter(entity => hasPersonality(entity, personality))
+            .map(entity => new Preference(entity, PreferenceEnum.Like));
+    }
+
     // this is very readable :)
     const samePersonalityFriends = getFriendPersonaPref(personality, PreferenceEnum.Like);
-    const defaultHangoutPreferences = AllHangouts.filter(hangout => hangout.personalityPreferences.includes(personality))
-        .map(hangout => new Preference(hangout, PreferenceEnum.Like));
-    const defaultGiftPreferences = AllGifts.filter(gift => gift.personalityPreferences.includes(personality))
-        .map(gift => new Preference(gift, PreferenceEnum.Like));
+    const defaultHangoutPreferences = getThingPref(EntityKindEnum.Hangout);
+    const defaultGiftPreferences = getThingPref(EntityKindEnum.Gift);
     const defaultPreferences = [...defaultHangoutPreferences, ...defaultGiftPreferences, ...samePersonalityFriends];
 
     switch (personality) {
@@ -71,10 +94,20 @@ export function getPreferencesForPersonality(personality: Personality): Preferen
 
 // Adds things like mutual enemies and mutual friends.
 export function addFriendPreference(name1: string, name2: string, preferenceType: PreferenceType = PreferenceEnum.Favorite): void {
-    const f1index = AllFriends.findIndex(f => f.name === name1)
-    const f2index = AllFriends.findIndex(f => f.name === name2)
-    if (f1index === -1 || f2index === -1)
-        return console.error(`Could not find one or both friends: ${name1}, ${name2}`)
-    AllFriends[f1index].preferences.push(new Preference(AllFriends[f2index], preferenceType))
-    AllFriends[f2index].preferences.push(new Preference(AllFriends[f1index], preferenceType))
+    const friends = getEntities(EntityKindEnum.Friend) as Friend[];
+    const f1 = friends.find(f => f.name === name1);
+    const f2 = friends.find(f => f.name === name2);
+    if (!f1 || !f2)
+        return console.error(`Could not find one or both friends: ${name1}, ${name2}`);
+    if (f1.id === f2.id)
+        return console.error(`${name1} cannot have a preference about themselves.`);
+    setPreference(f1, f2, preferenceType);
+    setPreference(f2, f1, preferenceType);
+}
+
+/** Replaces any existing entry, so upgrading a Like to a Favorite leaves no stale row. */
+function setPreference(friend: Friend, target: GameEntity, preferenceType: PreferenceType): void {
+    const existing = friend.preferences.findIndex(p => p.target.key === target.key);
+    if (existing !== -1) friend.preferences.splice(existing, 1);
+    friend.preferences.push(new Preference(target, preferenceType));
 }

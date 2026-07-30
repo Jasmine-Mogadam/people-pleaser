@@ -2,7 +2,7 @@
   height: 50vh;
 }
 
-.hangout {
+.house {
   height: 100%;
   background-size: contain;
   background-position: center;
@@ -10,7 +10,7 @@
   position: relative;
 }
 
-.hangoutPlaceholder {
+.housePlaceholder {
   position: absolute;
   inset: 0;
   display: flex;
@@ -21,18 +21,7 @@
   color: var(--muted-foreground);
 }
 
-.attendees {
+.roommate {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-}
-
-.friendHolder {
-  display: flex;
-  align-items: flex-end;
+  transform: translate(-50%, -50%);
 }

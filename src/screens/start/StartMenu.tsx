@@ -17,7 +17,7 @@ function StartMenu() {
       case ScreenEnum.About:
         return <About setActiveScreen={setActiveScreen} />;
       case ScreenEnum.Game:
-        return <GameMain />;
+        return <GameMain setActiveScreen={setActiveScreen} />;
     }
   };
   return <>{renderScreen()}</>;

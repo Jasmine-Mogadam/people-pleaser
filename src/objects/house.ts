@@ -1,43 +1,53 @@
-import type { Friend } from "./friend";
+import { findImage, slugify } from "./entity";
 
+/**
+ * Somewhere to live. Roommates are stored in redux by id, not here -- this is
+ * catalog data and has to stay free of per-save state.
+ */
 class House {
+    name: string;
     price: number;
     maxRoomates: number;
-    roomates: Friend[];
-    image: string;
-    roomatePositions: { x: number, y: number }[];
+    /** Where to draw each roommate, as a percentage of the room. */
+    roomatePositions: { x: number; y: number }[];
+
     constructor(
+        name: string,
         price: number,
         maxRoomates: number,
-        image: string,
-        roomatePositions: { x: number, y: number }[]
+        roomatePositions: { x: number; y: number }[],
     ) {
+        this.name = name;
         this.price = price;
         this.maxRoomates = maxRoomates;
-        this.roomates = [];
-        this.image = image;
         this.roomatePositions = roomatePositions;
     }
-}
-export { type House };
 
+    get id(): string {
+        return slugify(this.name);
+    }
+
+    get image(): string | undefined {
+        return findImage("house", this.id);
+    }
+}
+export { House };
+
+// Positions are percentages of the room, so they scale with the background.
 export const AllHouses: House[] = [
-    new House(
-        0,
-        0,
-        "cramped_apartment.png",
-        [{ x: 0, y: 0 }]
-    ),
-    new House(
-        1000,
-        2,
-        "little_house.png",
-        [{ x: 0, y: 0 }, { x: 1, y: 0 }]
-    ),
-    new House(
-        5000,
-        5,
-        "big_house.png",
-        [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }]
-    ),
-]
+    new House("Cramped Apartment", 0, 0, []),
+    new House("Little House", 1000, 2, [
+        { x: 30, y: 55 },
+        { x: 60, y: 55 },
+    ]),
+    new House("Big House", 5000, 4, [
+        { x: 20, y: 45 },
+        { x: 45, y: 45 },
+        { x: 20, y: 70 },
+        { x: 45, y: 70 },
+    ]),
+];
+
+export function getHouse(id: string): House {
+    return AllHouses.find((h) => h.id === id) ?? AllHouses[0];
+}

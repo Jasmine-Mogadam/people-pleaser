@@ -1,38 +1,20 @@
 import { useEffect } from "react";
 import "./App.css";
 import StartMenu from "./screens/start/StartMenu";
-import { loadGameState, saveGameState } from "./state/gameState";
-import store from "./state/store";
+import { useAppSelector } from "./state/hooks";
 
 function App() {
-  loadGameState();
-  const {
-    inventory,
-    friends,
-    money,
-    house,
-    discoveredHangouts,
-    actionPoints,
-    currentWeek,
-  } = store.getState();
+  const settings = useAppSelector((state) => state.settings);
 
-  // autosave
+  // Accessibility settings live on <html> so plain CSS can react to them.
   useEffect(() => {
-    saveGameState();
-  }, [
-    inventory,
-    friends,
-    money,
-    house,
-    discoveredHangouts,
-    actionPoints,
-    currentWeek,
-  ]);
-  return (
-    <>
-      <StartMenu />
-    </>
-  );
+    const root = document.documentElement;
+    root.classList.toggle("reduced-motion", settings.reducedMotion);
+    root.classList.toggle("high-contrast", settings.highContrast);
+    root.classList.toggle("large-text", settings.largeText);
+  }, [settings]);
+
+  return <StartMenu />;
 }
 
 export default App;

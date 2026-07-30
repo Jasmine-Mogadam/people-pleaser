@@ -1,5 +1,5 @@
 import "./StartMenu.css";
-import { hasGameData, newGameState } from "../../state/gameState";
+import { hasGameData, loadGameState, newGameState } from "../../state/gameState";
 import { ScreenEnum } from "./screenEnum";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,26 +12,44 @@ import {
   DialogClose,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { useState } from "react";
+import { GAME_LENGTH_WEEKS } from "@/game/rules";
 
 function StartMenu({
   setActiveScreen,
 }: {
   setActiveScreen: (screen: string) => void;
 }) {
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const startNewGame = () => {
     newGameState();
     setActiveScreen(ScreenEnum.Game);
   };
+
+  // Continue used to call startNewGame, which wiped the save it was meant to load.
+  const continueGame = () => {
+    if (loadGameState()) {
+      setActiveScreen(ScreenEnum.Game);
+    } else {
+      setLoadError("That save could not be read. Starting a new game will replace it.");
+    }
+  };
+
   return (
     <>
       <section id="center">
         <div className="hero">
           <h1>People Pleaser</h1>
         </div>
+        <p className="max-w-md text-center text-sm text-muted-foreground">
+          You have {GAME_LENGTH_WEEKS} weeks and a handful of action points each
+          week. Spend them on people.
+        </p>
         <div className="menu">
           <Button
             className="Continue"
-            onClick={startNewGame}
+            onClick={continueGame}
             disabled={!hasGameData()}
           >
             Continue
@@ -79,6 +97,11 @@ function StartMenu({
             About
           </Button>
         </div>
+        {loadError && (
+          <p role="alert" className="text-sm text-destructive">
+            {loadError}
+          </p>
+        )}
       </section>
       <section id="spacer"></section>
     </>
