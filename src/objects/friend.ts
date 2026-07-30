@@ -120,7 +120,7 @@ export const AllFriends = [new Friend(
 ), new Friend(
     "Apple",
     "NatieN",
-    PersonalityEnum.Intense,
+    PersonalityEnum.Silly,
 ), new Friend(
     "Lucille",
     "NatieN",
@@ -145,6 +145,10 @@ export const AllFriends = [new Friend(
     "Reina",
     "HybridStarscapes",
     PersonalityEnum.Intense,
+), new Friend(
+    "Zac",
+    "HybridStarscapes",
+    PersonalityEnum.Relaxed,
 )]
 
 AllFriends.forEach(f => f.preferences = getPreferencesForPersonality(f.personality))
