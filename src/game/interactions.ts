@@ -98,6 +98,19 @@ function headroom(state: RootState, id: string): number {
     return 100 - (record(state, id)?.friendshipLevel ?? 0);
 }
 
+function knownKeys(state: RootState, id: string): string[] {
+    return record(state, id)?.discoveredPreferences ?? [];
+}
+
+/**
+ * The best this action could have paid out, for the "gained out of max" bar.
+ * Never reports less than what actually happened, in case a hand-authored
+ * preference beats what the personality tables can produce.
+ */
+function bestCase(idealAmount: number, gained: number): number {
+    return Math.max(Math.round(idealAmount * BEST_ROLL), gained);
+}
+
 /**
  * Reveals one preference the player has not seen yet, so chatting is how you
  * learn what to buy and where to go.
@@ -107,7 +120,7 @@ function revealSomething(
     state: RootState,
     friend: Friend,
 ): string | null {
-    const known = record(state, friend.id)?.discoveredPreferences ?? [];
+    const known = knownKeys(state, friend.id);
     const unknown = friend.preferences.filter(p => !known.includes(p.target.key));
     if (unknown.length === 0) return null;
 
@@ -163,11 +176,11 @@ export function chatWithFriend(
     }
 
     const repeats = timesSeenThisWeek(state, friendId);
-    const max = Math.round(CHAT_BASE_GAIN * BEST_ROLL);
     const gained = Math.min(
         Math.round(CHAT_BASE_GAIN * diminishingMultiplier(repeats) * roll()),
         headroom(state, friendId),
     );
+    const max = bestCase(CHAT_BASE_GAIN, gained);
 
     const reasons: string[] = [];
     if (repeats > 0) {
@@ -242,6 +255,9 @@ export function startHangout(
             amount *= PreferenceMultiplier[opinion];
             reasons.push(`${opinion}s ${hangout.name} (x${PreferenceMultiplier[opinion]})`);
             // Going somewhere they feel strongly about makes that opinion obvious.
+            if (!knownKeys(state, friend.id).includes(hangout.key)) {
+                learned.push(`${friend.name} ${opinion.toLowerCase()}s ${hangout.name}.`);
+            }
             dispatch(revealPreference({ id: friend.id, key: hangout.key }));
         }
 
@@ -267,10 +283,10 @@ export function startHangout(
         }
 
         const gained = Math.min(Math.round(amount * roll()), headroom(state, friend.id));
-        const max = Math.round(
-            (HANGOUT_BASE_GAIN * PreferenceMultiplier[PreferenceEnum.Like] +
-                GROUP_LIKE_BONUS * (attendees.length - 1)) *
-                BEST_ROLL,
+        const max = bestCase(
+            HANGOUT_BASE_GAIN * PreferenceMultiplier[PreferenceEnum.Like] +
+                GROUP_LIKE_BONUS * (attendees.length - 1),
+            gained,
         );
 
         dispatch(addFriendship({ id: friend.id, amount: gained }));
@@ -333,7 +349,9 @@ export function giveGift(
 
     const raw = Math.round(amount * roll());
     const gained = raw >= 0 ? Math.min(raw, headroom(state, friendId)) : raw;
-    const max = Math.round(GIFT_BASE_GAIN * PreferenceMultiplier[PreferenceEnum.Favorite] * BEST_ROLL);
+    // Personality tables only ever produce Like for items, so a Favorite-based
+    // max would be a number the player could never actually hit.
+    const max = bestCase(GIFT_BASE_GAIN * PreferenceMultiplier[PreferenceEnum.Like], gained);
 
     dispatch(spendActionPoints(ActionPointCost.Gift));
     dispatch(giftItem(giftId));

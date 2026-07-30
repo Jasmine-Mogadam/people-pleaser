@@ -63,7 +63,7 @@ function FriendSearch({
               <FriendThumb
                 friend={f}
                 key={f.id}
-                onClick={onToggle}
+                onPick={onToggle}
                 isActive={selectedIds.includes(f.id)}
                 friendshipLevel={showFriendship ? levelFor(f) : undefined}
                 disabled={full && !selectedIds.includes(f.id)}
