@@ -19,9 +19,10 @@ export const inventorySlice = createSlice({
                 return;
             }
             state.splice(index, 1);
+            return state
         },
         setInventory: (state, action: PayloadAction<Gift[]>) => {
-            state = action.payload;
+            return action.payload;
         },
     },
 });
@@ -38,6 +39,7 @@ export const friendsSlice = createSlice({
                 return;
             }
             state.push(action.payload);
+            return state
         },
         updateFriend: (state, action: PayloadAction<Friend>) => {
             const index = state.findIndex(friend => friend.id === action.payload.id);
@@ -46,9 +48,10 @@ export const friendsSlice = createSlice({
                 return;
             }
             state[index] = action.payload;
+            return state
         },
         setFriends: (state, action: PayloadAction<Friend[]>) => {
-            state = action.payload;
+            return action.payload;
         },
     },
 });
@@ -59,10 +62,11 @@ export const moneySlice = createSlice({
     initialState: 0 as number,
     reducers: {
         setMoney: (state, action: PayloadAction<number>) => {
-            state = action.payload;
+            return action.payload;
         },
         addMoney: (state, action: PayloadAction<number>) => {
             state += action.payload;
+            return state
         }
     },
 });
@@ -73,7 +77,7 @@ export const houseSlice = createSlice({
     initialState: AllHouses[0] as House,
     reducers: {
         setHouse: (state, action: PayloadAction<House>) => {
-            state = action.payload;
+            return action.payload;
         },
     },
 });
@@ -90,9 +94,10 @@ export const discoveredHangoutsSlice = createSlice({
                 return;
             }
             state.push(action.payload);
+            return state
         },
         setDiscoveredHangouts: (state, action: PayloadAction<Hangout[]>) => {
-            state = action.payload;
+            return action.payload;
         },
     },
 });
@@ -105,8 +110,8 @@ export const currentWeekSlice = createSlice({
         setCurrentWeek: (state, action: PayloadAction<number>) => {
             state = action.payload;
         },
-        nextWeek: (state, action: PayloadAction<number>) => {
-            state++
+        nextWeek: (state) => {
+            return state++
         }
     },
 });
@@ -117,10 +122,11 @@ export const actionPointsSlice = createSlice({
     initialState: 0 as number,
     reducers: {
         setActionPoints: (state, action: PayloadAction<number>) => {
-            state = action.payload;
+            return action.payload;
         },
         useActionPoints: (state, action: PayloadAction<number>) => {
             state -= action.payload
+            return state
         }
     },
 });

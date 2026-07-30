@@ -38,7 +38,7 @@ function StartMenu({
           </Button>
           {hasGameData() ? (
             <Dialog>
-              <DialogTrigger>Open</DialogTrigger>
+              <DialogTrigger className="StartNewGame">New Game</DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Are you sure?</DialogTitle>

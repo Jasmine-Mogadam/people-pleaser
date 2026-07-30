@@ -1,0 +1,10 @@
+.scaleup {
+  height: 50vh;
+}
+
+.hangout {
+  height: 100%;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}

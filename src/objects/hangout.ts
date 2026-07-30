@@ -12,7 +12,8 @@ class Hangout {
     description: string;
     constructor(name: string, image: string, personalityPreferences: Personality[], description: string) {
         this.name = name;
-        this.image = image;
+        // TODO: simplify this so image is no longer an input
+        this.image = new URL(`../assets/hangout/${image}`, import.meta.url).href;
         this.personalityPreferences = personalityPreferences;
         this.description = description;
     }

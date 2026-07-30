@@ -8,16 +8,20 @@ import { PhoneScreenEnum } from "./phone/PhoneScreenEnum";
 import Contacts from "./phone/Contacts";
 import Chat from "./phone/Chat";
 import BackButton from "./phone/BackButton";
+import { AllHangouts, type Hangout } from "@/objects/hangout";
 
 function Phone({
   setActiveScreen,
+  setSelectedHangout,
 }: {
   setActiveScreen: (screen: string) => void;
+  setSelectedHangout: (hangout: Hangout) => void;
 }) {
   const { discoveredHangouts } = store.getState();
 
   const renderScreen = () => {
     switch (activePhoneScreen) {
+      // TODO: Add shoppinh and work screens to get and spend money. You always get a base salary, but working can get promotions to get more + overtime for money now
       case PhoneScreenEnum.Main:
         return (
           <>
@@ -46,6 +50,7 @@ function Phone({
               className="wormground"
               onClick={() => setActivePhoneScreen(PhoneScreenEnum.WormGround)}
             >
+              {/* TODO: fake social media where 1 AP gets a roll for a new hangout or friend*/}
               <Worm />
               WormGround
             </Button>
@@ -53,6 +58,7 @@ function Phone({
               className="settings"
               onClick={() => setActivePhoneScreen(PhoneScreenEnum.Settings)}
             >
+              {/*TODO: accessibility settings*/}
               <Settings />
               Settings
             </Button>
@@ -73,14 +79,20 @@ function Phone({
               setActiveScreen={() => setActivePhoneScreen(PhoneScreenEnum.Main)}
             />{" "}
             Maps
-            {discoveredHangouts.map((h) => (
-              <Button
-                key={h.name}
-                onClick={() => setActiveScreen(ScreenEnum.Hangout)}
-              >
-                {h.name}
-              </Button>
-            ))}
+            {
+              // TODO: only use discovered hangouts and slowly unlock more from talking with friends
+              AllHangouts.map((h) => (
+                <Button
+                  key={h.name}
+                  onClick={() => {
+                    setSelectedHangout(h);
+                    setActiveScreen(ScreenEnum.Hangout);
+                  }}
+                >
+                  {h.name}
+                </Button>
+              ))
+            }
           </>
         );
       default:
