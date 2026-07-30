@@ -7,7 +7,7 @@ function FriendThumb({
   onClick = () => {},
 }: {
   friend: Friend;
-  isActive: boolean;
+  isActive?: boolean;
   onClick?: (friend: Friend) => void;
 }) {
   return (

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { ScreenEnum } from "./screenEnum";
 import Main from "./Main";
-import NewGame from "./NewGame";
 import About from "./About";
 import Gallery from "./Gallery";
 import GameMain from "../game/GameMain";
@@ -13,8 +12,6 @@ function StartMenu() {
     switch (activeScreen) {
       case ScreenEnum.Main:
         return <Main setActiveScreen={setActiveScreen} />;
-      case ScreenEnum.NewGame:
-        return <NewGame setActiveScreen={setActiveScreen} />;
       case ScreenEnum.Gallery:
         return <Gallery setActiveScreen={setActiveScreen} />;
       case ScreenEnum.About:

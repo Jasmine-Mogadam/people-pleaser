@@ -12,13 +12,22 @@ function App() {
     money,
     house,
     discoveredHangouts,
-    playerCharacter,
+    actionPoints,
+    currentWeek,
   } = store.getState();
 
   // autosave
   useEffect(() => {
     saveGameState();
-  }, [inventory, friends, money, house, discoveredHangouts, playerCharacter]);
+  }, [
+    inventory,
+    friends,
+    money,
+    house,
+    discoveredHangouts,
+    actionPoints,
+    currentWeek,
+  ]);
   return (
     <>
       <StartMenu />

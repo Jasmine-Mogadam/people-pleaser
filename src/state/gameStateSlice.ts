@@ -3,6 +3,7 @@ import { AllHouses, type House } from "../objects/house";
 import type { Gift } from "../objects/gift";
 import type { Hangout } from "../objects/hangout";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { } from "./gameState";
 
 export const inventorySlice = createSlice({
     name: "inventory",
@@ -20,7 +21,7 @@ export const inventorySlice = createSlice({
             state.splice(index, 1);
         },
         setInventory: (state, action: PayloadAction<Gift[]>) => {
-            return action.payload;
+            state = action.payload;
         },
     },
 });
@@ -47,7 +48,7 @@ export const friendsSlice = createSlice({
             state[index] = action.payload;
         },
         setFriends: (state, action: PayloadAction<Friend[]>) => {
-            return action.payload;
+            state = action.payload;
         },
     },
 });
@@ -58,10 +59,10 @@ export const moneySlice = createSlice({
     initialState: 0 as number,
     reducers: {
         setMoney: (state, action: PayloadAction<number>) => {
-            return action.payload;
+            state = action.payload;
         },
         addMoney: (state, action: PayloadAction<number>) => {
-            state += action.payload
+            state += action.payload;
         }
     },
 });
@@ -72,7 +73,7 @@ export const houseSlice = createSlice({
     initialState: AllHouses[0] as House,
     reducers: {
         setHouse: (state, action: PayloadAction<House>) => {
-            return action.payload;
+            state = action.payload;
         },
     },
 });
@@ -82,30 +83,27 @@ export const discoveredHangoutsSlice = createSlice({
     name: "discoveredHangouts",
     initialState: [] as Hangout[],
     reducers: {
+        discoverHangout: (state, action: PayloadAction<Hangout>) => {
+            const existingHangout = state.find(hangout => hangout.name === action.payload.name);
+            if (existingHangout) {
+                console.warn(`Hangout ${existingHangout.name} already exists in state.`);
+                return;
+            }
+            state.push(action.payload);
+        },
         setDiscoveredHangouts: (state, action: PayloadAction<Hangout[]>) => {
-            return action.payload;
+            state = action.payload;
         },
     },
 });
 export const { setDiscoveredHangouts } = discoveredHangoutsSlice.actions;
-
-export const playerCharacterSlice = createSlice({
-    name: "playerCharacter",
-    initialState: null as Friend | null,
-    reducers: {
-        setPlayerCharacter: (state, action: PayloadAction<Friend | null>) => {
-            return action.payload;
-        },
-    },
-});
-export const { setPlayerCharacter } = playerCharacterSlice.actions;
 
 export const currentWeekSlice = createSlice({
     name: "currentWeek",
     initialState: 0 as number,
     reducers: {
         setCurrentWeek: (state, action: PayloadAction<number>) => {
-            return action.payload;
+            state = action.payload;
         },
         nextWeek: (state, action: PayloadAction<number>) => {
             state++
@@ -119,7 +117,7 @@ export const actionPointsSlice = createSlice({
     initialState: 0 as number,
     reducers: {
         setActionPoints: (state, action: PayloadAction<number>) => {
-            return action.payload;
+            state = action.payload;
         },
         useActionPoints: (state, action: PayloadAction<number>) => {
             state -= action.payload

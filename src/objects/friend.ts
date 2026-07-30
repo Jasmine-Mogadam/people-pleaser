@@ -52,7 +52,7 @@ class Friend {
 
     getLikes(): Preference[] {
         return this.preferences.filter(
-            (p) => p.preference === PreferenceEnum.Like,
+            (p) => p.preference === PreferenceEnum.Like || p.preference === PreferenceEnum.Favorite,
         );
     }
 
@@ -63,13 +63,14 @@ class Friend {
         ).map(p => p.value) as Friend[]
     }
 
+    // TODO: make it based off favorites
     getBestFriends(): Friend[] {
         return this.getFriends().filter(f => f.owner === this.owner) // same owner
     }
 
     getDislikes(): Preference[] {
         return this.preferences.filter(
-            (p) => p.preference === PreferenceEnum.Dislike,
+            (p) => p.preference === PreferenceEnum.Dislike || p.preference === PreferenceEnum.Hate,
         );
     }
 

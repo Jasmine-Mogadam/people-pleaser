@@ -1,13 +1,27 @@
 import "./StartMenu.css";
-import { hasGameData } from "../../state/gameState";
+import { hasGameData, newGameState } from "../../state/gameState";
 import { ScreenEnum } from "./screenEnum";
 import { Button } from "@/components/ui/button";
+import {
+  DialogContent,
+  DialogHeader,
+  Dialog,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 function StartMenu({
   setActiveScreen,
 }: {
   setActiveScreen: (screen: string) => void;
 }) {
+  const startNewGame = () => {
+    newGameState();
+    setActiveScreen(ScreenEnum.Game);
+  };
   return (
     <>
       <section id="center">
@@ -17,17 +31,41 @@ function StartMenu({
         <div className="menu">
           <Button
             className="Continue"
-            onClick={() => setActiveScreen(ScreenEnum.Game)}
+            onClick={startNewGame}
             disabled={!hasGameData()}
           >
             Continue
           </Button>
-          <Button
-            className="StartNewGame"
-            onClick={() => setActiveScreen(ScreenEnum.NewGame)}
-          >
-            Start New Game
-          </Button>
+          {hasGameData() ? (
+            <Dialog>
+              <DialogTrigger>Open</DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Are you sure?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    your save and lose all your friends! D:
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose
+                    render={<Button variant="outline">Cancel</Button>}
+                  />
+                  <Button
+                    type="submit"
+                    className="StartNewGame"
+                    onClick={startNewGame}
+                  >
+                    Start New Game
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <Button className="StartNewGame" onClick={startNewGame}>
+              Start New Game
+            </Button>
+          )}
           <Button
             className="Gallery"
             onClick={() => setActiveScreen(ScreenEnum.Gallery)}

@@ -1,11 +1,11 @@
 import type { Friend } from "../objects/friend";
 import type { Gift } from "../objects/gift";
 import type { Hangout } from "../objects/hangout";
-import type { House } from "../objects/house";
-import { actionPointsSlice, currentWeekSlice, discoveredHangoutsSlice, friendsSlice, houseSlice, inventorySlice, moneySlice, playerCharacterSlice } from "./gameStateSlice";
+import { AllHouses, type House } from "../objects/house";
+import { actionPointsSlice, currentWeekSlice, discoveredHangoutsSlice, friendsSlice, houseSlice, inventorySlice, moneySlice, setActionPoints, setCurrentWeek, setDiscoveredHangouts, setFriends, setHouse, setInventory, setMoney } from "./gameStateSlice";
 import store from "./store";
 
-const { inventory, friends, money, house, discoveredHangouts, playerCharacter, currentWeek, actionPoints } = store.getState();
+const { inventory, friends, money, house, discoveredHangouts, currentWeek, actionPoints } = store.getState();
 
 export interface State {
     inventory: Gift[];
@@ -13,7 +13,6 @@ export interface State {
     money: number;
     house: House;
     discoveredHangouts: Hangout[];
-    playerCharacter: Friend | null;
     currentWeek: number;
     actionPoints: number;
 }
@@ -28,7 +27,6 @@ export function loadGameState(): void {
             moneySlice.actions.setMoney(state.money);
             houseSlice.actions.setHouse(state.house);
             discoveredHangoutsSlice.actions.setDiscoveredHangouts(state.discoveredHangouts);
-            playerCharacterSlice.actions.setPlayerCharacter(state.playerCharacter);
             currentWeekSlice.actions.setCurrentWeek(state.currentWeek);
             actionPointsSlice.actions.setActionPoints(state.actionPoints);
         } catch (error) {
@@ -44,7 +42,6 @@ export function saveGameState(): void {
         money: money,
         house: house,
         discoveredHangouts: discoveredHangouts,
-        playerCharacter: playerCharacter,
         currentWeek: currentWeek,
         actionPoints: actionPoints
     };
@@ -56,9 +53,18 @@ export function saveGameState(): void {
     }
 }
 
-// if you don't have a character for some reason the other states are kinda moot
+export function newGameState(): void {
+    setInventory([])
+    setFriends([])
+    setMoney(100)
+    setHouse(AllHouses[0])
+    setDiscoveredHangouts([])
+    setCurrentWeek(0)
+    setActionPoints(5)
+    saveGameState();
+}
+
+// checks for the root state in storage
 export function hasGameData(): boolean {
-    return (
-        playerCharacter !== null
-    );
+    return localStorage.getItem("state") !== null;
 }

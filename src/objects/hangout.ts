@@ -19,7 +19,7 @@ class Hangout {
 
     // TODO: make gifts, friends, and gifts have a shared abstract class that share this function
     getPeopleWhoLikeThis(): Friend[] {
-        return AllFriends.filter(f => this.personalityPreferences.includes(f.personality));
+        return AllFriends.filter(f => f.getLikes().some(p => p.value.name === this.name));
     }
 
     // random chance to find a new friend

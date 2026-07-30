@@ -7,6 +7,7 @@ import { ScreenEnum } from "./screenEnum";
 import { PhoneScreenEnum } from "./phone/PhoneScreenEnum";
 import Contacts from "./phone/Contacts";
 import Chat from "./phone/Chat";
+import BackButton from "./phone/BackButton";
 
 function Phone({
   setActiveScreen,
@@ -68,6 +69,10 @@ function Phone({
       case PhoneScreenEnum.Maps:
         return (
           <>
+            <BackButton
+              setActiveScreen={() => setActivePhoneScreen(PhoneScreenEnum.Main)}
+            />{" "}
+            Maps
             {discoveredHangouts.map((h) => (
               <Button
                 key={h.name}
@@ -78,8 +83,15 @@ function Phone({
             ))}
           </>
         );
-      case PhoneScreenEnum.Settings:
-        return <>WIP</>;
+      default:
+        return (
+          <>
+            <BackButton
+              setActiveScreen={() => setActivePhoneScreen(PhoneScreenEnum.Main)}
+            />{" "}
+            Not Implemented :(
+          </>
+        );
     }
   };
   const [activePhoneScreen, setActivePhoneScreen] = useState(
