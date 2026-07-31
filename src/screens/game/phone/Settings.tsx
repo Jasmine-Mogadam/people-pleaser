@@ -22,6 +22,11 @@ const options: {
     label: "Larger text",
     description: "Increases the base font size across the game.",
   },
+  {
+    key: "dyslexiaFont",
+    label: "Dyslexia-friendly font",
+    description: "Switches everything to OpenDyslexic.",
+  },
 ];
 
 function Settings({

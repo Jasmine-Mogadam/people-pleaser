@@ -51,6 +51,10 @@ export const HANGOUT_TIP_CHANCE = 0.35;
 /** Friendship lost each week with anyone you did not interact with. */
 export const WEEKLY_DECAY = 2;
 
+// Close friends occasionally give something back at the start of a week.
+export const GIFT_BACK_MIN_FRIENDSHIP = 80;
+export const GIFT_BACK_CHANCE = 0.3;
+
 // Roommates
 export const ROOMMATE_MIN_FRIENDSHIP = 70;
 /** Roommates gain this much per week instead of decaying -- you live with them. */

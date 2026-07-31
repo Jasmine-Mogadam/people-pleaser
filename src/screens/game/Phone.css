@@ -46,7 +46,7 @@
   background: var(--phone-bezel);
   color: #f4f2f7;
   font: inherit;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
   cursor: pointer;
   position: relative;
@@ -180,7 +180,7 @@
 }
 
 .appLabel {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   line-height: 1.2;
   text-align: center;
   /* Long names like WormGround must not push the grid wider than the phone. */
@@ -222,7 +222,7 @@
   align-items: center;
   gap: 8px;
   padding-bottom: 6px;
-  font-size: 17px;
+  font-size: var(--fs-lg);
   font-weight: 600;
   color: var(--foreground);
 }
@@ -252,7 +252,7 @@
 }
 
 .phoneHint {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--muted-foreground);
 }
 
@@ -276,20 +276,20 @@
 }
 
 .rowTitle {
-  font-size: 14px;
+  font-size: var(--fs-base);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .rowFlavour {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-style: italic;
   color: var(--muted-foreground);
 }
 
 .rowMeta {
-  font-size: 11px;
+  font-size: var(--fs-xxs);
   opacity: 0.75;
 }
 
@@ -312,7 +312,7 @@
 }
 
 .upgradePrice {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -349,7 +349,7 @@
   align-items: center;
   gap: 8px;
   margin-top: 4px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--muted-foreground);
 }
@@ -370,11 +370,11 @@
 }
 
 .historyTitle {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 600;
 }
 
 .historyLine {
-  font-size: 11px;
+  font-size: var(--fs-xxs);
   color: var(--muted-foreground);
 }

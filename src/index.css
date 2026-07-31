@@ -23,7 +23,21 @@
     --heading: system-ui, "Segoe UI", Roboto, sans-serif;
     --mono: ui-monospace, Consolas, monospace;
 
-    font: 18px/145% var(--sans);
+    /* One knob for the "Larger text" setting. Tailwind's utilities are rem-based
+       so they follow the root size, but the game's own CSS uses these vars --
+       without them, half the interface ignored the setting. */
+    --fs-scale: 1;
+    --fs-xxs: calc(11px * var(--fs-scale));
+    --fs-xs: calc(12px * var(--fs-scale));
+    --fs-sm: calc(13px * var(--fs-scale));
+    --fs-base: calc(14px * var(--fs-scale));
+    --fs-md: calc(15px * var(--fs-scale));
+    --fs-lg: calc(17px * var(--fs-scale));
+    --fs-xl: calc(22px * var(--fs-scale));
+
+    font-family: var(--sans);
+    font-size: calc(18px * var(--fs-scale));
+    line-height: 145%;
     letter-spacing: 0.18px;
     color-scheme: light dark;
     color: var(--text);
@@ -34,7 +48,7 @@
     -moz-osx-font-smoothing: grayscale;
 
     @media (max-width: 1024px) {
-      font-size: 16px;
+      font-size: calc(16px * var(--fs-scale));
     }
   }
 
@@ -61,21 +75,21 @@
   }
 
   h1 {
-    font-size: 56px;
+    font-size: calc(56px * var(--fs-scale));
     letter-spacing: -1.68px;
     margin: 32px 0;
     @media (max-width: 1024px) {
-      font-size: 36px;
+      font-size: calc(36px * var(--fs-scale));
       margin: 20px 0;
     }
   }
   h2 {
-    font-size: 24px;
+    font-size: calc(24px * var(--fs-scale));
     line-height: 118%;
     letter-spacing: -0.24px;
     margin: 0 0 8px;
     @media (max-width: 1024px) {
-      font-size: 20px;
+      font-size: calc(20px * var(--fs-scale));
     }
   }
   p {
@@ -91,7 +105,7 @@
   }
 
   code {
-    font-size: 15px;
+    font-size: calc(15px * var(--fs-scale));
     line-height: 135%;
     padding: 4px 8px;
     background: var(--code-bg);

@@ -14,6 +14,10 @@ export interface FriendRecord {
     friendshipLevel: number;
     /** Preference keys the player has uncovered, e.g. "hangout:art_museum". */
     discoveredPreferences: string[];
+    /** The last thing the player gave them, so they never hand it straight back. */
+    lastGiftId?: string;
+    /** The last place the player took them, which is what they owe you for. */
+    lastHangoutId?: string;
 }
 
 export interface HouseState {
@@ -32,6 +36,7 @@ export interface SettingsState {
     reducedMotion: boolean;
     highContrast: boolean;
     largeText: boolean;
+    dyslexiaFont: boolean;
 }
 
 export const MAX_FRIENDSHIP = 100;
@@ -88,6 +93,16 @@ export const friendsSlice = createSlice({
             );
             return state;
         },
+        noteGiftReceived: (state, action: PayloadAction<{ id: string; giftId: string }>) => {
+            const friend = state.find(f => f.id === action.payload.id);
+            if (friend) friend.lastGiftId = action.payload.giftId;
+            return state;
+        },
+        noteHangoutAttended: (state, action: PayloadAction<{ id: string; hangoutId: string }>) => {
+            const friend = state.find(f => f.id === action.payload.id);
+            if (friend) friend.lastHangoutId = action.payload.hangoutId;
+            return state;
+        },
         revealPreference: (state, action: PayloadAction<{ id: string; key: string }>) => {
             const friend = state.find(f => f.id === action.payload.id);
             if (!friend) return state;
@@ -101,7 +116,14 @@ export const friendsSlice = createSlice({
         },
     },
 });
-export const { discoverFriend, addFriendship, revealPreference, setFriends } = friendsSlice.actions;
+export const {
+    discoverFriend,
+    addFriendship,
+    noteGiftReceived,
+    noteHangoutAttended,
+    revealPreference,
+    setFriends,
+} = friendsSlice.actions;
 
 export const moneySlice = createSlice({
     name: "money",
@@ -226,6 +248,7 @@ export const defaultSettings: SettingsState = {
     reducedMotion: false,
     highContrast: false,
     largeText: false,
+    dyslexiaFont: false,
 };
 
 export const settingsSlice = createSlice({

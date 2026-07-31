@@ -14,6 +14,8 @@ import {
     getItem,
     giftItem,
     nextWeek,
+    noteGiftReceived,
+    noteHangoutAttended,
     promote,
     recordInteraction,
     revealPreference,
@@ -28,6 +30,8 @@ import type { AppDispatch, RootState } from "../state/store";
 import {
     ActionPointCost,
     CHAT_BASE_GAIN,
+    GIFT_BACK_CHANCE,
+    GIFT_BACK_MIN_FRIENDSHIP,
     GIFT_BASE_GAIN,
     GROUP_DISLIKE_PENALTY,
     GROUP_LIKE_BONUS,
@@ -375,6 +379,7 @@ export function startHangout(
 
         dispatch(addFriendship({ id: friend.id, amount: gained }));
         dispatch(recordInteraction(friend.id));
+        dispatch(noteHangoutAttended({ id: friend.id, hangoutId: hangout.id }));
         gains.push({
             friendId: friend.id,
             name: friend.name,
@@ -441,6 +446,7 @@ export function giveGift(
 
     dispatch(spendActionPoints(ActionPointCost.Gift));
     dispatch(giftItem(giftId));
+    dispatch(noteGiftReceived({ id: friendId, giftId }));
     dispatch(addFriendship({ id: friendId, amount: gained }));
     dispatch(recordInteraction(friendId));
 
@@ -598,7 +604,58 @@ export interface WeekReport {
     actionPoints: number;
     roommateGains: string[];
     drifted: string[];
+    /** Presents and debts settled by close friends over the weekend. */
+    givenBack: string[];
     gameOver: boolean;
+}
+
+/**
+ * Close friends give something back at the start of a week: either an item they
+ * like, or the money they owe you for the last place you took them.
+ *
+ * They never hand back the last thing you gave them, and they can only settle a
+ * debt for somewhere that actually cost money.
+ */
+function rollGiftsBack(dispatch: AppDispatch, state: RootState): string[] {
+    const notes: string[] = [];
+
+    state.friends.forEach((friendRecord) => {
+        if (friendRecord.friendshipLevel < GIFT_BACK_MIN_FRIENDSHIP) return;
+        if (Math.random() > GIFT_BACK_CHANCE) return;
+
+        const friend = getFriend(friendRecord.id);
+        if (!friend) return;
+
+        const owedFor = friendRecord.lastHangoutId
+            ? getHangout(friendRecord.lastHangoutId)
+            : undefined;
+        const debt = owedFor?.costPerPerson ?? 0;
+
+        const pool = friend
+            .getLikes()
+            .map(p => p.target)
+            .filter(
+                target =>
+                    target.kind === EntityKindEnum.Gift &&
+                    target.id !== friendRecord.lastGiftId,
+            );
+
+        const canRepay = debt > 0;
+        const canGift = pool.length > 0;
+        if (!canRepay && !canGift) return;
+
+        if (canRepay && (!canGift || Math.random() < 0.5)) {
+            dispatch(addMoney(debt));
+            notes.push(`${friend.name} paid you back $${debt} for the ${owedFor!.name}.`);
+            return;
+        }
+
+        const present = pool[Math.floor(Math.random() * pool.length)];
+        dispatch(getItem(present.id));
+        notes.push(`${friend.name} gave you a ${present.name}.`);
+    });
+
+    return notes;
 }
 
 /**
@@ -625,13 +682,23 @@ export function advanceWeek(dispatch: AppDispatch, state: RootState): WeekReport
         }
     });
 
+    const givenBack = rollGiftsBack(dispatch, state);
+
     dispatch(addMoney(salary));
     dispatch(setActionPoints(actionPoints));
     dispatch(setWeeklyInteractions({}));
     dispatch(nextWeek());
 
     const week = state.currentWeek + 1;
-    return { week, salary, actionPoints, roommateGains, drifted, gameOver: isGameOver(week) };
+    return {
+        week,
+        salary,
+        actionPoints,
+        roommateGains,
+        drifted,
+        givenBack,
+        gameOver: isGameOver(week),
+    };
 }
 
 function allHangoutIds(): string[] {

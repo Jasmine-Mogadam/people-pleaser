@@ -105,6 +105,7 @@ function Contacts({
 
                 <Button
                   variant="outline"
+                  disabled={actionPoints < ActionPointCost.Hangout}
                   onClick={() => {
                     setOpenId(null);
                     onPlanHangout(open);

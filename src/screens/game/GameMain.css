@@ -24,7 +24,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: 500;
   color: var(--foreground);
   font-variant-numeric: tabular-nums;
@@ -72,17 +72,17 @@
   display: grid;
   place-items: center;
   color: var(--muted-foreground);
-  font-size: 14px;
+  font-size: var(--fs-base);
 }
 
 .sceneTitle {
-  font-size: 22px;
+  font-size: var(--fs-xl);
   font-weight: 600;
   color: var(--text-h);
   margin: 0;
 }
 
 .sceneMeta {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--muted-foreground);
 }

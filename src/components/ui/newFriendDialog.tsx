@@ -26,15 +26,16 @@ function NewFriendDialog({
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-sm" showCloseButton={false}>
-        <div className="grid justify-items-center gap-3 text-center">
+        {/* Short screens have to be able to see the title, so the portrait
+            gives up height before the text does. */}
+        <div className="grid max-h-[80vh] justify-items-center gap-3 overflow-y-auto text-center">
           <DialogTitle className="text-2xl">
             You befriended {friend.name}
           </DialogTitle>
           <EntityImage
             src={friend.image}
             name={friend.name}
-            size={200}
-            className="drop-shadow-lg"
+            className="h-[min(200px,32vh)] w-auto drop-shadow-lg"
           />
           <div className="grid gap-1">
             <div>

@@ -32,7 +32,7 @@
 .tagline {
   max-width: 30rem;
   color: var(--muted-foreground);
-  font-size: 15px;
+  font-size: var(--fs-md);
 }
 
 .menu {

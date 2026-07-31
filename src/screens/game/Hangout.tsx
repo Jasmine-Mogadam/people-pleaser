@@ -61,8 +61,9 @@ function HangoutDisplay({
       selectedHangout.id,
       selectedIds,
     );
+    // The guest list is left as it was: going out with the same group again is
+    // the common case, and re-picking everybody each time was busywork.
     announce(toastFromResult(outcome));
-    if (outcome.ok) setSelectedIds([]);
   };
 
   return (
@@ -88,11 +89,16 @@ function HangoutDisplay({
           <div className="scenePlaceholder">{selectedHangout.name}</div>
         )}
         <div className="attendees">
-          {selectedIds.map((id) => {
+          {selectedIds.map((id, index) => {
             const friend = getFriend(id);
             if (!friend) return null;
             return (
-              <div className="attendee" key={id}>
+              <div
+                className="attendee"
+                key={id}
+                // Staggered so the group bobs out of sync rather than in lockstep.
+                style={{ animationDelay: `${index * 0.35}s` }}
+              >
                 <EntityImage src={friend.image} name={friend.name} size={110} />
               </div>
             );

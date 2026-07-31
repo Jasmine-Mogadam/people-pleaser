@@ -21,6 +21,7 @@ export function toastFromResult(result: InteractionResult): ToastInput {
             label: gain.name,
             value: `${gain.gained >= 0 ? "+" : ""}${gain.gained}`,
             fill: gain.level / 100,
+            delta: gain.gained / 100,
             meta: gain.tier,
             sub: gain.reaction ? [gain.reaction, ...gain.causes] : gain.causes,
         })),

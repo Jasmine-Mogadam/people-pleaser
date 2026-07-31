@@ -74,6 +74,7 @@ function GameMain({
       title: `Week ${report.week + 1}`,
       message: `Paycheck $${report.salary}. Action points back to ${report.actionPoints}.`,
       notes: [
+        ...report.givenBack,
         report.roommateGains.length > 0
           ? `Roommates: ${report.roommateGains.join(", ")}`
           : "",
