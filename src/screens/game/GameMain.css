@@ -1,69 +1,55 @@
+/* Deliberately not positioned. The scene and the handset pin themselves to the
+   viewport instead, so they are siblings in one stack and can be ordered
+   against each other rather than the phone being trapped inside the scene's
+   own context. */
 .gameLayout {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
   text-align: left;
 }
 
-.gameHeader {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 18px;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in oklab, var(--background) 88%, transparent);
-  backdrop-filter: blur(6px);
-}
-
-.stat {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--fs-md);
-  font-weight: 500;
-  color: var(--foreground);
-  font-variant-numeric: tabular-nums;
-}
-
-.statIcon {
-  height: 17px;
-  width: 17px;
-  color: var(--primary);
-}
-
-.statMuted {
-  color: var(--muted-foreground);
-  font-weight: 400;
-}
-
-.endWeek {
-  margin-left: auto;
-}
-
+/* Playing the game is looking at a place, so the place fills the window. This
+   breaks out of the centred page column on purpose: the menus are a document,
+   the game is not. */
 .gameStage {
-  flex: 1;
-  min-height: 0;
-  padding: 20px;
-  /* Room for the closed phone handle so nothing hides behind it. */
-  padding-bottom: 76px;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: #0d0e12;
 }
 
-/* Shared scene frame for the apartment and hangout backdrops. */
+/* Shared frame for the apartment and hangout backdrops. */
 .scene {
-  position: relative;
-  height: min(52vh, 460px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  background-color: var(--muted);
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
+}
+
+/* The scene is a place, not a document. None of it is text to select or a file
+   to drag out, and dragging across it should never leave the room and the
+   people in it sitting under a blue highlight. Clicks pass straight through to
+   whatever is actually interactive. */
+.sceneArt,
+.scenePlaceholder,
+.castFigure,
+.castFigure * {
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.sceneArt {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+/* Darkens the ground so the cast and the handset have something to sit against
+   instead of floating on whatever the backdrop happens to be doing. */
+.sceneWash {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.05) 60%, rgb(0 0 0 / 0.32));
 }
 
 .scenePlaceholder {
@@ -71,18 +57,100 @@
   inset: 0;
   display: grid;
   place-items: center;
-  color: var(--muted-foreground);
-  font-size: var(--fs-base);
+  color: #6c6d78;
+  font-size: var(--fs-lg);
 }
 
-.sceneTitle {
-  font-size: var(--fs-xl);
-  font-weight: 600;
-  color: var(--text-h);
+/* ------------------------------------------------------------------ the cast */
+
+/* Characters stand in the scene rather than being pasted onto it: a slow skew
+   from the feet reads as weight shifting. Reduced motion switches every
+   animation off globally.
+
+   Every character is drawn at the same 410x850, so giving the box that ratio and
+   a height makes it hug the figure exactly -- its width is then the real width
+   of the person, which is what the ground shadow and name tag hang off. Scale
+   carries depth: --depth is 1 for somebody at the front of the scene. */
+.castFigure {
+  position: absolute;
+  bottom: 0;
+  aspect-ratio: 410 / 850;
+  /* A position marks the spot somebody is standing on, not their left edge. */
+  translate: -50% 0;
+  scale: var(--depth, 1);
+  transform-origin: 50% 100%;
+  animation: idleSkewA 2.6s ease-in-out infinite;
+}
+
+.castFigure:nth-child(even) {
+  animation-name: idleSkewB;
+  animation-duration: 2.9s;
+}
+
+@keyframes idleSkewA {
+  0%,
+  100% {
+    transform: skewX(-1.1deg);
+  }
+  50% {
+    transform: skewX(1.1deg);
+  }
+}
+
+@keyframes idleSkewB {
+  0%,
+  100% {
+    transform: skewX(1.1deg);
+  }
+  50% {
+    transform: skewX(-1.1deg);
+  }
+}
+
+/* Without something on the floor the drop shadow alone leaves everyone looking
+   like a sticker hovering an inch above the ground. */
+.castShadow {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  translate: -50% 0;
+  height: 20px;
+  width: 74%;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.35);
+  filter: blur(6px);
+}
+
+.castArt {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  /* Feet on the floor, however tall the art happens to be. */
+  object-position: bottom;
+  filter: drop-shadow(0 8px 10px rgb(0 0 0 / 0.3));
+  transform: translateY(-8px);
+}
+
+.castName {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  translate: -50% 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.72);
+  color: white;
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+/* Section headings inside the phone's own screens. Lives here rather than in
+   Phone.css because it is the voice the scenes speak in, and the Home app is
+   the room talking. */
+.sceneSubhead {
   margin: 0;
-}
-
-.sceneMeta {
-  font-size: var(--fs-sm);
-  color: var(--muted-foreground);
+  font-family: var(--font-heading);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--foreground);
 }

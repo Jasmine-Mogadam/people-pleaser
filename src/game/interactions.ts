@@ -18,6 +18,7 @@ import {
     noteHangoutAttended,
     promote,
     recordInteraction,
+    removeRoommate,
     revealPreference,
     setActionPoints,
     setHouse,
@@ -40,6 +41,7 @@ import {
     MAX_PROMOTIONS,
     OVERTIME_PAY,
     REVEAL_CHANCE,
+    ROOMMATE_EVICTION_PENALTY,
     ROOMMATE_MIN_FRIENDSHIP,
     ROOMMATE_WEEKLY_GAIN,
     SHIFTS_PER_PROMOTION,
@@ -552,6 +554,24 @@ export function inviteRoommate(dispatch: AppDispatch, state: RootState, friendId
     }
     dispatch(addRoommate(friendId));
     return `${friend.name} moved in. Roommates gain ${ROOMMATE_WEEKLY_GAIN} friendship a week instead of drifting.`;
+}
+
+/**
+ * Throw somebody out. Costs no action points and takes effect immediately --
+ * what it costs is the friendship, right now, which is the whole point: you can
+ * always free up a room, but never for nothing.
+ */
+export function evictRoommate(dispatch: AppDispatch, state: RootState, friendId: string): string {
+    const friend = getFriend(friendId);
+    if (!friend) return "That character does not exist.";
+    if (!state.house.roommateIds.includes(friendId)) {
+        return `${friend.name} does not live with you.`;
+    }
+    const before = record(state, friendId)?.friendshipLevel ?? 0;
+    dispatch(removeRoommate(friendId));
+    dispatch(addFriendship({ id: friendId, amount: -ROOMMATE_EVICTION_PENALTY }));
+    const after = Math.max(0, before - ROOMMATE_EVICTION_PENALTY);
+    return `${friend.name} moved out. Friendship down ${ROOMMATE_EVICTION_PENALTY} to ${Math.round(after)}.`;
 }
 
 // ---------------------------------------------------------------- wormground

@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -8,13 +9,17 @@ import {
 import { X } from "lucide-react";
 import {
   ToastContext,
+  ToastFeedContext,
   TOAST_LIFETIME,
-  TOAST_STACK,
+  useToastFeed,
   type Toast,
   type ToastInput,
 } from "./toastContext";
 
-/** Phone-sized screens have no room for a tall stack of notifications. */
+/** Long enough to play the banner out. Kept in step with the CSS. */
+const EXIT_MS = 260;
+
+/** Phone-sized screens have no room to leave a banner sitting there. */
 const SMALL_SCREEN = "(max-width: 640px)";
 
 function useSmallScreen(): boolean {
@@ -32,68 +37,96 @@ function useSmallScreen(): boolean {
 }
 
 /**
- * Small non-blocking notifications. Actions report through these instead of a
- * dialog, so playing a turn never costs an extra click to dismiss something.
+ * Holds whatever the last action had to say. Nothing is drawn here: these show
+ * up as notifications on the phone, so the handset renders them (see
+ * PhoneNotice) and this only decides what is current.
  */
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [current, setCurrent] = useState<Toast | undefined>(undefined);
   const nextId = useRef(0);
-  const small = useSmallScreen();
+  const exitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // Held in a ref so `push` never changes identity, which would re-render every
-  // screen holding on to it. Updated from an effect, not during render.
-  const limit = useRef(TOAST_STACK.default);
-  useEffect(() => {
-    limit.current = small ? TOAST_STACK.small : TOAST_STACK.default;
-  }, [small]);
-
+  // Dismissing does not remove it: a banner that vanishes the instant it expires
+  // reads as a glitch, so it is flagged on its way out and held in the tree long
+  // enough to animate off.
   const dismiss = useCallback((id: number) => {
-    setToasts((current) => current.filter((t) => t.id !== id));
+    setCurrent((showing) =>
+      showing?.id === id && !showing.leaving
+        ? { ...showing, leaving: true }
+        : showing,
+    );
+    clearTimeout(exitTimer.current);
+    exitTimer.current = setTimeout(() => setCurrent(undefined), EXIT_MS);
   }, []);
 
+  // A phone shows one notification at a time, so a new one replaces whatever is
+  // still up rather than queueing behind it. Spamming an action therefore never
+  // builds a pile that covers anything.
   const push = useCallback((toast: ToastInput) => {
-    const id = nextId.current++;
-    setToasts((current) => [
-      ...current.slice(-(limit.current - 1)),
-      { ...toast, id },
-    ]);
+    clearTimeout(exitTimer.current);
+    setCurrent({ ...toast, id: nextId.current++ });
   }, []);
+
+  useEffect(() => () => clearTimeout(exitTimer.current), []);
+
+  const feed = useMemo(() => ({ current, dismiss }), [current, dismiss]);
 
   return (
     <ToastContext.Provider value={push}>
-      {children}
-      <div className="toastViewport" role="status" aria-live="polite">
-        {toasts.map((toast) => (
-          <ToastCard
-            key={toast.id}
-            toast={toast}
-            small={small}
-            onDismiss={dismiss}
-          />
-        ))}
-      </div>
+      <ToastFeedContext.Provider value={feed}>
+        {children}
+      </ToastFeedContext.Provider>
     </ToastContext.Provider>
   );
 }
 
-function ToastCard({
+/**
+ * The notification banner itself. Lives on the handset: over the screen while
+ * the phone is up, and just above the bezel while it is face down on the table,
+ * so an action taken away from the phone still lights it up.
+ */
+export function PhoneNotice({ away }: { away: boolean }) {
+  const { current, dismiss } = useToastFeed();
+
+  return (
+    // The live region has to be in the document before the text changes, or a
+    // screen reader has nothing to notice, so the wrapper is always rendered.
+    <div
+      className={`phoneNotice ${away ? "isAway" : ""}`}
+      role="status"
+      aria-live="polite"
+    >
+      {current && (
+        <NoticeCard key={current.id} toast={current} onDismiss={dismiss} />
+      )}
+    </div>
+  );
+}
+
+function NoticeCard({
   toast,
-  small,
   onDismiss,
 }: {
   toast: Toast;
-  small: boolean;
   onDismiss: (id: number) => void;
 }) {
+  const small = useSmallScreen();
+
   useEffect(() => {
+    if (toast.leaving) return;
     const tone = toast.tone ?? "default";
-    const lifetime = small ? TOAST_LIFETIME.small[tone] : TOAST_LIFETIME.default[tone];
+    const lifetime = small
+      ? TOAST_LIFETIME.small[tone]
+      : TOAST_LIFETIME.default[tone];
     const timer = setTimeout(() => onDismiss(toast.id), lifetime);
     return () => clearTimeout(timer);
-  }, [toast.id, toast.tone, small, onDismiss]);
+  }, [toast.id, toast.tone, toast.leaving, small, onDismiss]);
 
   return (
-    <div className={`toast ${toast.tone === "error" ? "toastError" : ""}`}>
+    <div
+      className={`toast ${toast.tone === "error" ? "toastError" : ""}`}
+      data-state={toast.leaving ? "leaving" : "showing"}
+    >
       <button
         className="toastClose"
         onClick={() => onDismiss(toast.id)}

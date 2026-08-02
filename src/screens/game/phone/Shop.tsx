@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import EntityImage from "@/components/ui/entityImage";
-import BackButton from "./BackButton";
 import { AllGifts } from "@/objects/catalog";
 import { AllHouses, getHouse } from "@/objects/house";
 import { AllUpgrades } from "@/objects/upgrade";
@@ -12,11 +11,7 @@ import store from "@/state/store";
 
 const Tab = { Gifts: "Gifts", Upgrades: "Upgrades", Housing: "Housing" };
 
-function Shop({
-  setActiveScreen,
-}: {
-  setActiveScreen: (screen: string) => void;
-}) {
+function Shop() {
   const dispatch = useAppDispatch();
   const announce = useAnnounce();
   const money = useAppSelector((state) => state.money);
@@ -41,13 +36,8 @@ function Shop({
 
   return (
     <div className="screen">
-      {/* Header and tabs stay put while the list scrolls under them. */}
+      {/* Tabs stay put while the list scrolls under them. */}
       <div className="stickyTop">
-        <div className="screenHeader">
-          <BackButton setActiveScreen={setActiveScreen} />
-          <span>Shop</span>
-          <span className="headerMoney">${Math.round(money)}</span>
-        </div>
         <div className="tabRow">
           {Object.values(Tab).map((name) => (
             <Button

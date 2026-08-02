@@ -59,6 +59,12 @@ export const GIFT_BACK_CHANCE = 0.3;
 export const ROOMMATE_MIN_FRIENDSHIP = 70;
 /** Roommates gain this much per week instead of decaying -- you live with them. */
 export const ROOMMATE_WEEKLY_GAIN = 3;
+/**
+ * Friendship lost the moment you throw somebody out. Steep enough that filling
+ * a house and then swapping people around freely is a bad plan: asking somebody
+ * to move in is supposed to be a decision, not a slot machine.
+ */
+export const ROOMMATE_EVICTION_PENALTY = 20;
 
 /** Someone counts as an actual friend, for the header and the ending, at this level. */
 export const FRIEND_THRESHOLD = 25;

@@ -85,6 +85,42 @@
   --gain: oklch(0.74 0.16 152);
 }
 
+/* The phone's own surfaces: its glass, and the notifications that land on it.
+   They are lit like the object they belong to rather than like the surrounding
+   document, so they carry their own palette instead of the page theme. Setting
+   the tokens rather than hard-coding colours means every button, input and row
+   already inside them comes out dark without knowing where it is. */
+.phoneGlass,
+.phoneNotice {
+  --background: #0f1015;
+  --foreground: #f2f2f5;
+  --card: #1c1d25;
+  --card-foreground: #f2f2f5;
+  --popover: #17181f;
+  --popover-foreground: #f2f2f5;
+  --primary: #e0507e;
+  --primary-foreground: #ffffff;
+  --secondary: #262735;
+  --secondary-foreground: #f2f2f5;
+  --muted: #262735;
+  --muted-foreground: #9a9baa;
+  --accent: #24252f;
+  --accent-foreground: #f2f2f5;
+  --destructive: #f08a8a;
+  --border: #2f303b;
+  --input: #2f303b;
+  --ring: #6b6c7c;
+  --gain: oklch(0.78 0.17 152);
+}
+
+/* The accessibility setting has to reach inside those surfaces too, or turning
+   high contrast on visibly skips the phone. */
+html.high-contrast .phoneGlass,
+html.high-contrast .phoneNotice {
+  --border: #8e8fa0;
+  --muted-foreground: #dcdce6;
+}
+
 @theme inline {
   --font-sans: "DM Sans Variable", sans-serif;
   --font-heading: "Manrope Variable", sans-serif;
@@ -138,6 +174,51 @@
   html {
     @apply font-sans;
   }
+}
+
+/* ------------------------------------------------------------- known opinions */
+
+/* Four opinions, two of them good. Favourite is the brighter green so it reads
+   as "more than likes" rather than as a different kind of thing. The colour is
+   only ever a reinforcement -- the tag always spells the opinion out. */
+[data-preference="Favorite"] {
+  --pref: #7ee0a8;
+}
+[data-preference="Like"] {
+  --pref: #56b981;
+}
+[data-preference="Dislike"] {
+  --pref: #e8a33f;
+}
+[data-preference="Hate"] {
+  --pref: #ef6b6b;
+}
+
+/* Whatever is carrying the opinion gets outlined in it. */
+[data-preference] {
+  border-color: var(--pref);
+}
+
+.prefTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  border: 1px solid var(--pref);
+  border-radius: 999px;
+  font-size: var(--fs-xxs);
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--pref);
+  white-space: nowrap;
+}
+
+/* Over the art on a thumbnail, so it needs something to sit on. */
+.friendThumb .prefTag {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 1;
+  background: rgb(0 0 0 / 0.72);
 }
 
 /* Character thumbnails. The compact variant is for the phone's narrow screens. */
@@ -226,13 +307,6 @@
   border-radius: var(--radius-lg);
 }
 
-.headerMoney {
-  margin-left: auto;
-  font-size: var(--fs-base);
-  font-weight: 500;
-  color: var(--muted-foreground);
-}
-
 .statList {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -315,43 +389,50 @@
   translate: 18px 0;
 }
 
-/* Toasts sit top left: the phone drawer owns the bottom right, and the action
-   buttons own the bottom left, so anywhere else would cover something the
-   player is about to click. */
-.toastViewport {
-  position: fixed;
-  left: 16px;
-  top: 72px;
-  /* Above the phone drawer, below dialogs. A dialog is something the player
-     asked for; a toast is ambient and must never cover it. */
-  z-index: 45;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 8px;
-  width: 330px;
-  max-width: calc(100vw - 32px);
-  pointer-events: none;
-}
-
+/* What an action had to say arrives as a notification on the phone rather than
+   as a popup over the world. Positioning lives in Phone.css, since where it
+   belongs depends on whether the handset is up; this is just the card. */
 .toast {
   position: relative;
   pointer-events: auto;
   display: grid;
   gap: 6px;
   padding: 12px 34px 12px 14px;
-  border-radius: var(--radius-xl);
+  border-radius: 18px;
   border: 1px solid var(--border);
   background: var(--popover);
   color: var(--popover-foreground);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.15);
+  box-shadow: 0 10px 26px rgb(0 0 0 / 0.45);
   text-align: left;
-  animation: toastIn 0.22s ease;
+  /* Drops in from above, the way a banner slides down onto a phone screen, and
+     lifts back out the same way rather than blinking off. The card is held in
+     the tree for the length of the exit -- see PhoneNotice. */
+  animation: noticeIn 0.34s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
 }
 
-@keyframes toastIn {
+.toast[data-state="leaving"] {
+  animation: noticeOut 0.26s cubic-bezier(0.4, 0, 0.9, 0.4) both;
+}
+
+@keyframes noticeIn {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes noticeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
   }
 }
 

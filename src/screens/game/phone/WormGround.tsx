@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import BackButton from "./BackButton";
 import { browseWormGround } from "@/game/interactions";
 import { toastFromResult } from "@/game/resultToast";
 import { useAnnounce } from "@/game/useAnnounce";
@@ -8,21 +7,13 @@ import { useAppDispatch, useAppSelector } from "@/state/hooks";
 import store from "@/state/store";
 
 /** Social media. One action point buys a roll at a new place or a new person. */
-function WormGround({
-  setActiveScreen,
-}: {
-  setActiveScreen: (screen: string) => void;
-}) {
+function WormGround() {
   const dispatch = useAppDispatch();
   const announce = useAnnounce();
   const actionPoints = useAppSelector((state) => state.actionPoints);
 
   return (
     <div className="screen">
-      <div className="screenHeader">
-        <BackButton setActiveScreen={setActiveScreen} />
-        <span>WormGround</span>
-      </div>
       <p className="phoneHint">
         Scrolling costs {ActionPointCost.Browse} AP. It might turn up a new
         place, a new person, or nothing at all.

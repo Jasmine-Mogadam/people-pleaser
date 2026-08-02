@@ -1,4 +1,3 @@
-import BackButton from "./BackButton";
 import { useAppSelector } from "@/state/hooks";
 import type { HistoryEntry } from "@/state/gameStateSlice";
 
@@ -6,21 +5,12 @@ import type { HistoryEntry } from "@/state/gameStateSlice";
  * Everything that has happened this run, newest first, split by week. The log
  * is part of the save, so it survives closing the tab.
  */
-function History({
-  setActiveScreen,
-}: {
-  setActiveScreen: (screen: string) => void;
-}) {
+function History() {
   const history = useAppSelector((state) => state.history);
   const newestFirst = [...history].reverse();
 
   return (
     <div className="screen">
-      <div className="screenHeader">
-        <BackButton setActiveScreen={setActiveScreen} />
-        <span>History</span>
-      </div>
-
       {history.length === 0 ? (
         <p className="phoneHint">
           Nothing yet. Everything you do this run gets logged here.

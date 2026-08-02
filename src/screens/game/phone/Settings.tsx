@@ -1,4 +1,3 @@
-import BackButton from "./BackButton";
 import { toggleSetting, type SettingsState } from "@/state/gameStateSlice";
 import { useAppDispatch, useAppSelector } from "@/state/hooks";
 
@@ -29,20 +28,12 @@ const options: {
   },
 ];
 
-function Settings({
-  setActiveScreen,
-}: {
-  setActiveScreen: (screen: string) => void;
-}) {
+function Settings() {
   const dispatch = useAppDispatch();
   const settings = useAppSelector((state) => state.settings);
 
   return (
     <div className="screen">
-      <div className="screenHeader">
-        <BackButton setActiveScreen={setActiveScreen} />
-        <span>Settings</span>
-      </div>
       <div className="grid gap-1.5">
         {options.map((option) => (
           <button

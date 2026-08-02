@@ -27,22 +27,42 @@ export interface ToastInput {
 
 export interface Toast extends ToastInput {
     id: number;
+    /** On its way out, and being held in the tree long enough to animate off. */
+    leaving?: boolean;
 }
 
 /**
  * Errors hang around longer, since they are the ones worth reading. Phone-sized
- * screens clear out faster and stack fewer, because four cards there cover the
- * game rather than sitting beside it.
+ * screens clear out faster, because a banner there covers the game rather than
+ * sitting over a corner of it.
  */
 export const TOAST_LIFETIME = {
     default: { default: 5000, error: 8000 },
     small: { default: 2600, error: 4500 },
 };
 
-export const TOAST_STACK = { default: 4, small: 2 };
-
 export const ToastContext = createContext<(toast: ToastInput) => void>(() => { });
 
 export function useToast() {
     return useContext(ToastContext);
+}
+
+/**
+ * The other half of the toast context: what is currently showing, for whoever
+ * draws it. These arrive as banner notifications on the phone, so the provider
+ * holds the state and the handset renders it -- one at a time, the way a phone
+ * shows a notification, with a new one replacing whatever was still up.
+ */
+export interface ToastFeed {
+    current: Toast | undefined;
+    dismiss: (id: number) => void;
+}
+
+export const ToastFeedContext = createContext<ToastFeed>({
+    current: undefined,
+    dismiss: () => { },
+});
+
+export function useToastFeed() {
+    return useContext(ToastFeedContext);
 }

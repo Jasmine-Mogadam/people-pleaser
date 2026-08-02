@@ -1,4 +1,5 @@
 import type { Friend } from "../../../objects/friend";
+import type { PreferenceType } from "../../../objects/preference";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useState } from "react";
@@ -18,6 +19,7 @@ function FriendSearch({
   showFriendship = true,
   revealAll = false,
   compact = false,
+  preferenceFor,
   onToggle = () => {},
 }: {
   friends: Friend[];
@@ -28,6 +30,8 @@ function FriendSearch({
   revealAll?: boolean;
   /** Smaller thumbnails, for the narrow phone screens. */
   compact?: boolean;
+  /** Supplied when the picking is *for* something, e.g. a venue they may hate. */
+  preferenceFor?: (friend: Friend) => PreferenceType | null;
   onToggle?: (friend: Friend) => void;
 }) {
   const [friendFilter, setFriendFilter] = useState<string>("");
@@ -70,6 +74,7 @@ function FriendSearch({
                 onPick={onToggle}
                 isActive={selectedIds.includes(f.id)}
                 friendshipLevel={showFriendship ? levelFor(f) : undefined}
+                preference={preferenceFor?.(f)}
                 disabled={full && !selectedIds.includes(f.id)}
               />
             ) : (

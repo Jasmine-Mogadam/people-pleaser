@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import BackButton from "./BackButton";
 import { workOvertime } from "@/game/interactions";
 import { useAnnounce } from "@/game/useAnnounce";
 import {
@@ -16,11 +15,7 @@ import store from "@/state/store";
  * for cash right now, and enough shifts earn a raise that pays out every week.
  * The raise count is deliberately not shown -- just experience filling up.
  */
-function Work({
-  setActiveScreen,
-}: {
-  setActiveScreen: (screen: string) => void;
-}) {
+function Work() {
   const dispatch = useAppDispatch();
   const announce = useAnnounce();
   const job = useAppSelector((state) => state.job);
@@ -39,11 +34,6 @@ function Work({
 
   return (
     <div className="screen">
-      <div className="screenHeader">
-        <BackButton setActiveScreen={setActiveScreen} />
-        <span>Work</span>
-      </div>
-
       <dl className="statList">
         <dt>Weekly paycheck</dt>
         <dd>${weeklySalary(job)}</dd>

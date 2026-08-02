@@ -1,15 +1,13 @@
+/* Roommates are placed by the house's own percentage grid, standing back in the
+   room rather than up against the camera, so they run smaller than the guests at
+   a venue. How far back each of them is comes from the component: the same y
+   that puts somebody higher up the wall also puts them further away. */
 .roommate {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  display: grid;
-  justify-items: center;
-  gap: 2px;
+  height: clamp(240px, 54vh, 540px);
 }
 
-.roommateName {
-  font-size: var(--fs-xs);
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: rgb(0 0 0 / 0.72);
-  color: white;
+/* The name tag sits under the feet, which is inside the shadow, so it needs to
+   come out on top of it. */
+.roommate .castName {
+  z-index: 1;
 }

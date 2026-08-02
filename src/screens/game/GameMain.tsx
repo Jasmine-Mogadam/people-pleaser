@@ -1,10 +1,8 @@
-import { Button } from "@/components/ui/button";
 import { ScreenEnum } from "./screenEnum";
 import House from "./House";
 import Hangout from "./Hangout";
 import Phone from "./Phone";
 import Ending from "./Ending";
-import NewFriendDialog from "@/components/ui/newFriendDialog";
 import { useEffect, useRef, useState } from "react";
 import type { Hangout as HangoutType } from "@/objects/hangout";
 import type { Friend } from "@/objects/friend";
@@ -14,17 +12,7 @@ import store from "@/state/store";
 import { saveGameState } from "@/state/gameState";
 import { advanceWeek } from "@/game/interactions";
 import { useAnnounce } from "@/game/useAnnounce";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { CalendarDays, CircleDollarSign, Users, Zap } from "lucide-react";
-import { FRIEND_THRESHOLD, GAME_LENGTH_WEEKS, isGameOver } from "@/game/rules";
+import { isGameOver } from "@/game/rules";
 import "./GameMain.css";
 
 function GameMain({
@@ -35,21 +23,16 @@ function GameMain({
   const dispatch = useAppDispatch();
   const announce = useAnnounce();
   const friends = useAppSelector((state) => state.friends);
-  const money = useAppSelector((state) => state.money);
   const currentWeek = useAppSelector((state) => state.currentWeek);
-  const actionPoints = useAppSelector((state) => state.actionPoints);
 
   const [activeScreen, setActiveScreen] = useState(ScreenEnum.House);
   const [selectedHangout, setSelectedHangout] = useState(
     undefined as HangoutType | undefined,
   );
-  const [pendingInvite, setPendingInvite] = useState<string | null>(null);
+  // Who is coming along. Owned here rather than by the venue, because the phone
+  // is where the guest list is built and the scene is where it is drawn.
+  const [guestIds, setGuestIds] = useState<string[]>([]);
   const [newFriend, setNewFriend] = useState<Friend | null>(null);
-  const [confirmEndWeek, setConfirmEndWeek] = useState(false);
-
-  const realFriends = friends.filter(
-    (f) => f.friendshipLevel >= FRIEND_THRESHOLD,
-  ).length;
 
   // Autosave. Subscribing to the store catches every change, including the ones
   // that happen inside interaction handlers rather than during a render.
@@ -67,7 +50,6 @@ function GameMain({
   }, [friends]);
 
   const endWeek = () => {
-    setConfirmEndWeek(false);
     const report = advanceWeek(dispatch, store.getState());
     if (isGameOver(report.week)) return;
     announce({
@@ -85,10 +67,26 @@ function GameMain({
     });
   };
 
-  // Unspent action points are gone for good, so make the player say so out loud.
-  const requestEndWeek = () => {
-    if (actionPoints > 0) setConfirmEndWeek(true);
-    else endWeek();
+  // Picking a smaller venue cannot silently take more people than fit in it.
+  const chooseHangout = (hangout: HangoutType) => {
+    setSelectedHangout(hangout);
+    setGuestIds((current) => current.slice(0, hangout.capacity));
+  };
+
+  // Capacity is enforced here and again in startHangout, so neither the UI nor a
+  // stale click can overfill a venue.
+  const toggleGuest = (id: string) =>
+    setGuestIds((current) =>
+      current.includes(id)
+        ? current.filter((guest) => guest !== id)
+        : current.length >= (selectedHangout?.capacity ?? 0)
+          ? current
+          : [...current, id],
+    );
+
+  const goHome = () => {
+    setGuestIds([]);
+    setActiveScreen(ScreenEnum.House);
   };
 
   const renderScreen = () => {
@@ -97,15 +95,7 @@ function GameMain({
         return <House />;
       case ScreenEnum.Hangout:
         return (
-          <Hangout
-            key={`${selectedHangout?.id ?? ""}-${pendingInvite ?? ""}`}
-            selectedHangout={selectedHangout}
-            initialInvite={pendingInvite}
-            onDone={() => {
-              setPendingInvite(null);
-              setActiveScreen(ScreenEnum.House);
-            }}
-          />
+          <Hangout selectedHangout={selectedHangout} guestIds={guestIds} />
         );
     }
   };
@@ -116,56 +106,24 @@ function GameMain({
 
   return (
     <div className="gameLayout">
-      <header className="gameHeader">
-        <span className="stat">
-          <CalendarDays className="statIcon" />
-          Week {currentWeek + 1}
-          <span className="statMuted">/ {GAME_LENGTH_WEEKS}</span>
-        </span>
-        <span className="stat">
-          <CircleDollarSign className="statIcon" />${Math.round(money)}
-        </span>
-        <span className="stat">
-          <Users className="statIcon" />
-          {realFriends} {realFriends === 1 ? "Friend" : "Friends"}
-        </span>
-        <span className="stat">
-          <Zap className="statIcon" />
-          {actionPoints} AP
-        </span>
-        <Button className="endWeek" onClick={requestEndWeek}>
-          End Week
-        </Button>
-      </header>
-
       <main className="gameStage">{renderScreen()}</main>
 
+      {/* Week, money and action points live on the handset now: the phone is
+          how you spend a week, so it is where the week is counted. */}
       <Phone
         setActiveScreen={setActiveScreen}
-        setSelectedHangout={setSelectedHangout}
-        onInvite={setPendingInvite}
+        atVenue={activeScreen === ScreenEnum.Hangout}
+        selectedHangout={selectedHangout}
+        onChooseHangout={chooseHangout}
+        guestIds={guestIds}
+        onToggleGuest={toggleGuest}
+        onInvite={(friendId) => setGuestIds(friendId ? [friendId] : [])}
+        onGoHome={goHome}
+        onEndWeek={endWeek}
+        newFriend={newFriend}
+        onDismissNewFriend={() => setNewFriend(null)}
       />
 
-      <NewFriendDialog friend={newFriend} onClose={() => setNewFriend(null)} />
-
-      <Dialog open={confirmEndWeek} onOpenChange={setConfirmEndWeek}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>End the week early?</DialogTitle>
-            <DialogDescription>
-              You still have {actionPoints} action point
-              {actionPoints === 1 ? "" : "s"} left. They do not carry over to
-              next week.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose
-              render={<Button variant="outline">Keep playing</Button>}
-            />
-            <Button onClick={endWeek}>End week anyway</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -1,28 +1,10 @@
-.attendees {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  right: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-}
+/* Guests stand at the front of the venue, right up against the camera, so they
+   run large: the backdrops put their floor line around four fifths of the way
+   down, and anybody standing in front of that is nearly the height of the shot.
+   Height is all that is set -- the width follows the art's own ratio.
 
+   Where each of them stands, and how far back they are, comes from the
+   component, since both depend on how many turned up. */
 .attendee {
-  display: flex;
-  align-items: flex-end;
-  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.25));
-  /* A slow bob so the group reads as waiting around rather than pasted on.
-     Reduced motion switches every animation off globally. */
-  animation: idleBob 2.4s ease-in-out infinite alternate;
-}
-
-@keyframes idleBob {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-9px);
-  }
+  height: clamp(300px, 72vh, 720px);
 }
